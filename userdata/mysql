@@ -1,0 +1,76 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+# Configure hosts file
+cat <<EOF >/etc/hosts
+127.0.0.1       localhost
+192.168.1.100    rabbit
+192.168.1.101    mysql
+192.168.1.102    keystone
+192.168.1.103    nova
+192.168.1.104    neutron
+192.168.1.105    glance
+EOF
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt -y dist-upgrade
+apt -y install chrony augeas-tools
+
+# Install MySQL
+apt -y install mariadb-server python-pymysql mycli
+
+# Configure it
+cat <<EOF > /etc/mysql/mariadb.conf.d/99-openstack.cnf
+[mysqld]
+bind-address = 0.0.0.0
+
+default-storage-engine = innodb
+innodb_file_per_table = on
+max_connections = 4096
+collation-server = utf8_general_ci
+character-set-server = utf8
+EOF
+
+service mysql restart
+
+# Create databases and users
+mysql <<EOF
+CREATE DATABASE keystone;
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'zoblesmouches42';
+
+CREATE DATABASE nova_api;
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'zoblesmouches42';
+
+CREATE DATABASE nova;
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'zoblesmouches42';
+
+CREATE DATABASE nova_cell0;
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%' IDENTIFIED BY 'zoblesmouches42';
+
+CREATE DATABASE neutron;
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'zoblesmouches42';
+
+CREATE DATABASE glance;
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' IDENTIFIED BY 'zoblesmouches42';
+GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'zoblesmouches42';
+EOF

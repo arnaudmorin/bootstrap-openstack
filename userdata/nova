@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+# Configure hosts file
+cat <<EOF >/etc/hosts
+127.0.0.1       localhost
+192.168.1.100    irabbit
+192.168.1.101    mysql
+192.168.1.102    keystone
+192.168.1.103    nova
+192.168.1.104    neutron
+192.168.1.105    glance
+EOF
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt -y dist-upgrade
+apt -y install chrony augeas-tools
+
+# Install nova
+apt -y install nova-api nova-conductor nova-consoleauth nova-novncproxy nova-scheduler nova-placement-api
+
+# Configure nova
+augtool set /files/etc/nova/nova.conf/api_database/connection mysql+pymysql://nova:zoblesmouches42@mysql/nova_api
+augtool set /files/etc/nova/nova.conf/database/connection mysql+pymysql://nova:zoblesmouches42@mysql/nova
+augtool set /files/etc/nova/nova.conf/DEFAULT/transport_url rabbit://openstack:zoblesmouches42@rabbit
+augtool set /files/etc/nova/nova.conf/DEFAULT/my_ip 192.168.1.103
+augtool set /files/etc/nova/nova.conf/DEFAULT/use_neutron True
+augtool set /files/etc/nova/nova.conf/DEFAULT/firewall_driver nova.virt.firewall.NoopFirewallDriver
+augtool rm /files/etc/nova/nova.conf/DEFAULT/log_dir
+augtool set /files/etc/nova/nova.conf/api/auth_strategy keystone
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/auth_uri http://keystone:5000
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/auth_url http://keystone:35357
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/memcached_servers http://keystone:11211
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/auth_type password
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/project_domain_name default
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/user_domain_name default
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/project_name service
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/username nova
+augtool set /files/etc/nova/nova.conf/keystone_authtoken/password zoblesmouches42
+augtool set /files/etc/nova/nova.conf/vnc/enabled True
+augtool set /files/etc/nova/nova.conf/vnc/vncserver_listen 192.168.1.103
+augtool set /files/etc/nova/nova.conf/vnc/vncserver_proxyclient_address 192.168.1.103
+augtool set /files/etc/nova/nova.conf/glance/api_servers http://glance:9292
+augtool set /files/etc/nova/nova.conf/oslo_concurrency/lock_path /var/lib/nova/tmp
+augtool set /files/etc/nova/nova.conf/placement/os_region_name RegionOne
+augtool set /files/etc/nova/nova.conf/placement/project_domain_name Default
+augtool set /files/etc/nova/nova.conf/placement/project_name service
+augtool set /files/etc/nova/nova.conf/placement/auth_type password
+augtool set /files/etc/nova/nova.conf/placement/user_domain_name Default
+augtool set /files/etc/nova/nova.conf/placement/auth_url http://keystone:35357/v3
+augtool set /files/etc/nova/nova.conf/placement/username placement
+augtool set /files/etc/nova/nova.conf/placement/password zoblesmouches42
+
+su -s /bin/sh -c "nova-manage api_db sync" nova
+su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
+su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
+su -s /bin/sh -c "nova-manage db sync" nova
+
+service nova-api restart
+service nova-consoleauth restart
+service nova-scheduler restart
+service nova-conductor restart
+service nova-novncproxy restart

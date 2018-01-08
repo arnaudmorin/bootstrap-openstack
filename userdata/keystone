@@ -1,0 +1,152 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+# Configure hosts file
+cat <<EOF >/etc/hosts
+127.0.0.1       localhost
+192.168.1.100    rabbit
+192.168.1.101    mysql
+192.168.1.102    keystone
+192.168.1.103    nova
+192.168.1.104    neutron
+192.168.1.105    glance
+EOF
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt -y dist-upgrade
+apt -y install chrony augeas-tools
+
+# Install memcached
+apt -y install memcached python-memcache
+
+# Configure memcached
+sed -i -r 's/-l 127.0.0.1/#-l 127.0.0.1/' /etc/memcached.conf
+service memcached restart
+
+# Install keystone
+apt -y install keystone
+
+# Configure keystone
+augtool set /files/etc/keystone/keystone.conf/database/connection mysql+pymysql://keystone:zoblesmouches42@mysql/keystone
+augtool set /files/etc/keystone/keystone.conf/token/provider fernet
+su -s /bin/sh -c "keystone-manage db_sync" keystone
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+keystone-manage bootstrap --bootstrap-password zoblesmouches42 \
+  --bootstrap-admin-url http://keystone:35357/v3/ \
+  --bootstrap-internal-url http://keystone:5000/v3/ \
+  --bootstrap-public-url http://keystone:5000/v3/ \
+  --bootstrap-region-id RegionOne
+
+service keystone restart
+
+# Install and configure openstack client
+apt -y install python-openstackclient
+
+cat <<EOF >/root/openrc_admin
+export OS_USERNAME=admin
+export OS_PASSWORD=zoblesmouches42
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://keystone:35357/v3
+export OS_IDENTITY_API_VERSION=3
+EOF
+source /root/openrc_admin
+
+# Create project for services
+openstack project create \
+    --domain default \
+    --description "Service Project" \
+    service
+
+# Create users for services
+for user in nova placement neutron glance ; do
+    openstack user create \
+        --domain default \
+        --password zoblesmouches42 \
+        $user
+    openstack role add \
+        --project service \
+        --user $user \
+        admin
+done
+
+# Create services
+openstack service create \
+    --name nova \
+    --description "OpenStack Compute" \
+    compute
+
+openstack service create \
+    --name placement \
+    --description "Placement API" \
+    placement
+
+openstack service create \
+    --name glance \
+    --description "OpenStack Image" \
+    image
+
+openstack service create \
+    --name neutron \
+    --description "OpenStack Networking" \
+    network
+
+
+# Create endpoints
+for kind in public internal admin ; do
+    openstack endpoint create \
+        --region RegionOne \
+        compute $kind http://nova:8774/v2.1
+    openstack endpoint create \
+        --region RegionOne \
+        placement $kind http://nova:8778
+    openstack endpoint create \
+        --region RegionOne \
+        image $kind http://glance:9292
+    openstack endpoint create \
+        --region RegionOne \
+        network $kind http://neutron:9696
+done
+
+# Create demo project
+openstack project create \
+    --domain default \
+    --description "Demo Project" \
+    demo
+openstack user create \
+    --domain default \
+    --password zoblesmouches42 \
+    demo
+openstack role create user
+openstack role add \
+    --project demo \
+    --user demo \
+    user
+
+# Create demo openrc
+cat <<EOF >/root/openrc_demo
+export OS_USERNAME=demo
+export OS_PASSWORD=zoblesmouches42
+export OS_PROJECT_NAME=demo
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://keystone:5000/v3
+export OS_IDENTITY_API_VERSION=3
+EOF

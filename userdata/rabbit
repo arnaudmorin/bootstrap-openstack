@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+# Configure hosts file
+cat <<EOF >/etc/hosts
+127.0.0.1       localhost
+192.168.1.100    rabbit
+192.168.1.101    mysql
+192.168.1.102    keystone
+192.168.1.103    nova
+192.168.1.104    neutron
+192.168.1.105    glance
+EOF
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt -y purge cloud-init
+apt -y dist-upgrade
+apt -y install chrony augeas-tools
+
+apt -y install rabbitmq-server
+rabbitmqctl add_user openstack zoblesmouches42
+rabbitmqctl set_permissions openstack ".*" ".*" ".*"
