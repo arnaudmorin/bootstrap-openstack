@@ -1,0 +1,3 @@
+openstack.yml
+*.retry
+*.swp
