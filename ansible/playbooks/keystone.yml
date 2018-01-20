@@ -65,26 +65,18 @@
     template:
       src: keystone/openrc.j2
       dest: /root/openrc_admin
-  - name: create openrc_demo file
-    vars:
-      openrc_user: demo
-      openrc_password: "{{password}}"
-      openrc_project: demo
-    template:
-      src: keystone/openrc.j2
-      dest: /root/openrc_demo
 
-  - name: create service project
+  - name: create project service
     shell: |
       source /root/openrc_admin
       openstack project create \
         --domain default \
         --description "Service Project" \
         service
-      [ $? -eq 0 ] && touch /root/.ansible_service_project
+      [ $? -eq 0 ] && touch /root/.ansible_project_service
     args:
       executable: /bin/bash
-      creates: /root/.ansible_service_project
+      creates: /root/.ansible_project_service
   - name: create users for service project
     shell: |
       source /root/openrc_admin
@@ -92,10 +84,10 @@
         --domain default \
         --password "{{password}}" \
         {{item}}
-      [ $? -eq 0 ] && touch /root/.ansible_service_project_{{item}}
+      [ $? -eq 0 ] && touch /root/.ansible_user_{{item}}
     args:
       executable: /bin/bash
-      creates: /root/.ansible_service_project_{{item}}
+      creates: /root/.ansible_user_{{item}}
     with_items:
       - nova
       - neutron
@@ -108,15 +100,136 @@
         --project service \
         --user {{item}} \
         admin
-      [ $? -eq 0 ] && touch /root/.ansible_service_project_{{item}}_role
+      [ $? -eq 0 ] && touch /root/.ansible_role_admin_{{item}}
     args:
       executable: /bin/bash
-      creates: /root/.ansible_service_project_{{item}}_role
+      creates: /root/.ansible_role_admin_{{item}}
     with_items:
       - nova
       - neutron
       - placement
       - glance
+  - name: create services
+    shell: |
+      source /root/openrc_admin
+      openstack service create \
+        --name {{item}} \
+        {{item}}
+      [ $? -eq 0 ] && touch /root/.ansible_service_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_service_{{item}}
+    with_items:
+      - compute
+      - network
+      - placement
+      - image
+  - name: create services endpoints for nova
+    shell: |
+      source /root/openrc_admin
+      openstack endpoint create \
+        --region RegionOne \
+        compute {{item}} http://nova:8774/v2.1
+      [ $? -eq 0 ] && touch /root/.ansible_endpoint_nova_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_endpoint_nova_{{item}}
+    with_items:
+      - public
+      - admin
+      - internal
+  - name: create services endpoints for placement
+    shell: |
+      source /root/openrc_admin
+      openstack endpoint create \
+        --region RegionOne \
+        placement {{item}} http://nova:8778
+      [ $? -eq 0 ] && touch /root/.ansible_endpoint_placement_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_endpoint_placement_{{item}}
+    with_items:
+      - public
+      - admin
+      - internal
+  - name: create services endpoints for glance
+    shell: |
+      source /root/openrc_admin
+      openstack endpoint create \
+        --region RegionOne \
+        image {{item}} http://glance:9292
+      [ $? -eq 0 ] && touch /root/.ansible_endpoint_glance_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_endpoint_glance_{{item}}
+    with_items:
+      - public
+      - admin
+      - internal
+  - name: create services endpoints for neutron
+    shell: |
+      source /root/openrc_admin
+      openstack endpoint create \
+        --region RegionOne \
+        network {{item}} http://neutron:9696
+      [ $? -eq 0 ] && touch /root/.ansible_endpoint_neutron_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_endpoint_neutron_{{item}}
+    with_items:
+      - public
+      - admin
+      - internal
+
+  - name: create project demo
+    shell: |
+      source /root/openrc_admin
+      openstack project create \
+        --domain default \
+        --description "Demo Project" \
+        demo
+      [ $? -eq 0 ] && touch /root/.ansible_project_demo
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_project_demo
+  - name: create demo user
+    shell: |
+      source /root/openrc_admin
+      openstack user create \
+        --domain default \
+        --password "{{password}}" \
+        demo
+      [ $? -eq 0 ] && touch /root/.ansible_user_demo
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_user_demo
+  - name: create role user
+    shell: |
+      source /root/openrc_admin
+      openstack role create user
+      [ $? -eq 0 ] && touch /root/.ansible_role_create_user
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_role_create_user
+  - name: add user role to demo user for demo project
+    shell: |
+      source /root/openrc_admin
+      openstack role add \
+        --project demo \
+        --user demo \
+        user
+      [ $? -eq 0 ] && touch /root/.ansible_role_user_demo
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_role_user_demo
+  - name: create openrc_demo file
+    vars:
+      openrc_user: demo
+      openrc_password: "{{password}}"
+      openrc_project: demo
+    template:
+      src: keystone/openrc.j2
+      dest: /root/openrc_demo
 
   handlers:
   - name: restart memcached
