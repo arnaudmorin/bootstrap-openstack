@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt-get update
+apt -y purge cloud-init
+apt -y dist-upgrade
+apt -y install python chrony lnav
+
+cat <<EOF >/root/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDY15cdBmIs2XOpe4EiFCsaY6bmUmK/GysMoLl4UG51JCfJwvwoWCoA+6mDIbymZxhxq9IGxilp/yTA6WQ9s/5pBag1cUMJmFuda9PjOkXl04jgqh5tR6I+GZ97AvCg93KAECis5ubSqw1xOCj4utfEUtPoF1OuzqM/lE5mY4N6VKXn+fT7pCD6cifBEs6JHhVNvs5OLLp/tO8Pa3kKYQOdyS0xc3rh+t2lrzvKUSWGZbX+dLiFiEpjsUL3tDqzkEMNUn4pdv69OJuzWHCxRWPfdrY9Wg0j3mJesP29EBht+w+EC9/kBKq+1VKdmsXUXAcjEvjovVL8l1BrX3BY0R8D zob
+EOF
+
+cat <<'EOF' > /etc/network/interfaces
+auto lo
+iface lo inet loopback
+
+auto ens3
+iface ens3 inet manual
+up ip link set dev $IFACE up
+down ip link set dev $IFACE down
+
+auto ens4
+iface ens4 inet dhcp
+up ip r r default via 192.168.1.1
+up echo 'nameserver 8.8.8.8' >/etc/resolv.conf
+EOF

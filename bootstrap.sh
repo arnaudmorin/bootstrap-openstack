@@ -9,11 +9,15 @@ function boot(){(
         --nic net-id=management,v4-fixed-ip=192.168.1.$IP \
         --image 'Ubuntu 16.04' \
         --flavor c2-7 \
-        --user-data userdata/$NAME \
+        --user-data userdata/${NAME/-.+/} \
         $NAME
 )}
 
+boot deployer 1
 #boot rabbit 100
 #boot mysql 101
 #boot keystone 102
-boot nova 103
+#boot nova 103
+#boot glance 104
+#boot neutron 105
+#boot compute-1 151
