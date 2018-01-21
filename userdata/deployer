@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Setup logging stdout + stderr to logfile
+log_file="/var/log/postinstall.log"
+
+function log_handler {
+  while IFS='' read -r output; do
+    echo $output
+    echo "$(date) - $output" >> $log_file
+  done
+}
+
+exec &> >(log_handler)
+
+dhclient ens4
+
+apt update
+apt -y install software-properties-common
+add-apt-repository -y cloud-archive:pike
+apt-add-repository -y ppa:ansible/ansible
+apt update
+apt -y purge cloud-init
+apt -y dist-upgrade
+apt -y install python chrony lnav crudini ansible python-os-client-config python-shade git
+
+cat <<EOF >/root/.ssh/id_rsa
+-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA2NeXHQZiLNlzqXuBIhQrGmOm5lJivxsrDKC5eFBudSQnycL8
+KFgqAPupgyG8pmcYcavSBsYpaf8kwOlkPbP+aQWoNXFDCZhbnWvT4zpF5dOI4Koe
+bUeiPhmfewLwoPdygBAorObm0qsNcTgo+LrXxFLT6BdTrs6jP5ROZmODelSl5/n0
++6Qg+nInwRLOiR4VTb7OTiy6f7TvD2t5CmEDncktMXN64frdpa87ylElhmW1/nS4
+hYhKY7FC97Q6s5BDDVJ+KXb+vTibs1hwsUVj33a2PVoNI95iXrD9vRAYbfsPhAvf
+5ASqvtVSnZrF1FwHIxL46L1S/JdQa19wWNEfAwIDAQABAoIBAEuC2AatgGap2tM8
+RP2/FDt+VFKEggqWxWkCV1QEflKgopJqKjFKcmYhPSiDCRTRdfuvn9XoD+fvh7b+
+D4BFO+UKqUbjCDtBKTYqpIDOfCTKgzHpS+s2NNN3TMgjf/Qt91uNRPzg86SNGINC
+0VG8jwK47T43UVbgcozjcmHJabGhQFzMY7pfYjONTypbNtjNzkgV+y3+hFIHmDjA
+zOOXCLPcLSjyA2jg6FbQ0lpkArckD616D5LnyLDuulUxvEZ9YU0Nm6WdYCH+Upqk
+0EdSyb64SCF6jsUL4c0p1WogXn8a83dk7qq0CI7AW5rlIbsLbzmKDLsLKdZJgDlN
+NJjttkECgYEA9hn9Edb+RPd3saXU4cje0/pqYD0mwkLL0YJ83vho5s4fgUcYHHlf
+YmmUXTdEKc0IiYn/mjnWfv+eNhO8d3oHDqk2VuOPSekx50YQ2Ni+YX/hlObj5+BQ
+qy/B1P6vXGXV5s0X71jRYTaWX/+GBE6KQ77lgdCJ5YVYyXmFSbP/tvMCgYEA4ZBU
+VL4tVbsPEhMjh0HSR1bTnow26xAQpGZ9g3lqXj4ZEd4d8Gy7UyABAwRRgh2/5g+H
+E5skarZwHetNmli5SLv5xqJNIrJvyABYI7NuYvtYTP95qjzQ3/reK3VsXvq8SzcM
+o6oya6swRYV2UQjBpvpztF+Q8naw2PqKa35oG7ECgYB5FMhCIrjvTaICMUjP3Xhk
+auwzdWLAaQTGi6DMQwO5qugtPsFKIR0g2jk4s5xBxLLSmKa9Rn+V9EXu7T7ouY0H
+VZF6pnM1NhprYzmetuTUK4rdK8wtpVuLHfALz1KP7zqSV43TIKvDXIwXpyxUqh+0
+vRNGD0gJONY6KiO942WIqQKBgGGOo/q2+jKfIgiGQJKKdGEoe4SSTlpia2A/d7+6
+brfuEbe5oqdOz8JHEEj2wC4PoeTmCF0Bd8GzwFAgakL8Zr6/lmtD3SrJlDEjfPuL
+6o1i+jDrOfrYLNsCzL5tHf8CYRgC6jOLNB1/P/SBocewitkmb46u2qkTjq95xQ5y
+8KIxAoGBAK7hvaqme07Ju34eGytvpS6hspI05QT2gPUvRk/dSkWE+c5AttJLABgn
+yTLe9OAE9SbtLJEzpECS9MnmKc3jwtZUHoLkvhiYP0/8n15BsyhJgJ0Sq4lMoUeW
+9DHX7RJhmZgHsybDS40ARyUtCq8SdOf32I0W+jRM+obV9dzn9mmE
+-----END RSA PRIVATE KEY-----
+EOF
+
+chmod 600 /root/.ssh/id_rsa
+
+cat <<EOF >/root/.ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDY15cdBmIs2XOpe4EiFCsaY6bmUmK/GysMoLl4UG51JCfJwvwoWCoA+6mDIbymZxhxq9IGxilp/yTA6WQ9s/5pBag1cUMJmFuda9PjOkXl04jgqh5tR6I+GZ97AvCg93KAECis5ubSqw1xOCj4utfEUtPoF1OuzqM/lE5mY4N6VKXn+fT7pCD6cifBEs6JHhVNvs5OLLp/tO8Pa3kKYQOdyS0xc3rh+t2lrzvKUSWGZbX+dLiFiEpjsUL3tDqzkEMNUn4pdv69OJuzWHCxRWPfdrY9Wg0j3mJesP29EBht+w+EC9/kBKq+1VKdmsXUXAcjEvjovVL8l1BrX3BY0R8D zob
+EOF
+
+cat <<EOF >> /root/.ssh/config
+Host *
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
+EOF
+
+git clone https://github.com/arnaudmorin/isen-bootstrap-openstack.git
+mv /etc/ansible/ /etc/ansible.old
+ln -s /root/isen-bootstrap-openstack /etc/ansible
+
+cat <<EOF > /etc/ansible/openstack.yml
+clouds:
+  ovh:
+    auth:
+      auth_url: https://auth.cloud.ovh.net/v2.0/
+      username: jUvqs5AKgYfY
+      password: FIXME
+      project_name: 5005081080213810
+    region_name: DE1
+ansible:
+  use_hostnames: True
+  expand_hostvars: False
+  fail_on_errors: True
+EOF
+
