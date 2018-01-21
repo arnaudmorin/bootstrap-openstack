@@ -1,0 +1,47 @@
+---
+- hosts: mysql
+  vars:
+    password: zoblesmouches42
+  tasks:
+  - name: add hosts in /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+      state: present
+    with_items: "{{ groups.all }}"
+  - name: install mysql
+    apt: name={{item}} state=latest
+    with_items:
+      - mariadb-server
+      - python-pymysql
+      - python-mysqldb
+      - mycli
+  - name: configure mysql
+    copy: src=mysql/99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
+    notify:
+      - restart mysql
+  - name: create databases
+    mysql_db: name={{item}} state=present
+    with_items:
+      - keystone
+      - nova
+      - nova_api
+      - nova_cell0
+      - neutron
+      - glance
+  - name: create users
+    mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present
+    with_items:
+      - keystone
+      - nova
+      - neutron
+      - glance
+  - name: ensure mysql is running
+    service:
+      name: mysql
+      state: started
+  handlers:
+  - name: restart mysql
+    service:
+      name: mysql
+      state: restarted

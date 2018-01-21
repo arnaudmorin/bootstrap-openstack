@@ -1,0 +1,86 @@
+---
+- hosts: nova
+  vars:
+    password: zoblesmouches42
+  tasks:
+  - name: add hosts in /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+      state: present
+    with_items: "{{ groups.all }}"
+
+  - name: install nova
+    apt: name={{item}} state=latest
+    with_items:
+      - nova-api
+      - nova-conductor
+      - nova-consoleauth
+      - nova-novncproxy
+      - nova-scheduler
+  - name: configure nova
+    ini_file: path=/etc/nova/nova.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova" }
+      - { section: "api_database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova_api" }
+      - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
+      - { section: "DEFAULT", option: "my_ip", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
+      - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+      - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
+      - { section: "keystone_authtoken", option: "auth_type", value: "password" }
+      - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
+      - { section: "keystone_authtoken", option: "user_domain_name", value: "Default" }
+      - { section: "keystone_authtoken", option: "project_name", value: "service" }
+      - { section: "keystone_authtoken", option: "username", value: "nova" }
+      - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+      - { section: "vnc", option: "enabled", value: "True" }
+      - { section: "vnc", option: "vncserver_listen", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "vnc", option: "vncserver_proxyclient_address", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "glance", option: "api_servers", value: "http://glance:9292" }
+      - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
+      - { section: "placement", option: "os_region_name", value: "RegionOne" }
+      - { section: "placement", option: "project_domain_name", value: "Default" }
+      - { section: "placement", option: "project_name", value: "service" }
+      - { section: "placement", option: "auth_type", value: "password" }
+      - { section: "placement", option: "user_domain_name", value: "Default" }
+      - { section: "placement", option: "auth_url", value: "http://keystone:35357" }
+      - { section: "placement", option: "username", value: "placement" }
+      - { section: "placement", option: "password", value: "{{password}}" }
+    notify:
+      - restart nova
+  - name: configure nova (delete some lines)
+    ini_file: path=/etc/nova/nova.conf section={{item.section}} option={{item.option}} state=absent
+    with_items:
+      - { section: "DEFAULT", option: "log_dir" }
+    notify:
+      - restart nova
+
+  - name: initiate nova_api database
+    shell: su -s /bin/sh -c "nova-manage api_db sync" nova && touch /root/.ansible_initiate_nova_api_db
+    args:
+      creates: /root/.ansible_initiate_nova_api_db
+  - name: initiate cells map
+    shell: su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova && touch /root/.ansible_initiate_nova_cell_map
+    args:
+      creates: /root/.ansible_initiate_nova_cell_map
+#  - name: initiate cell1
+#    shell: su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova && touch /root/.ansible_initiate_nova_create_cell1
+#    args:
+#      creates: /root/.ansible_initiate_nova_create_cell1
+  - name: initiate nova database
+    shell: su -s /bin/sh -c "nova-manage db sync" nova && touch /root/.ansible_initiate_nova_db
+    args:
+      creates: /root/.ansible_initiate_nova_db
+   
+  handlers:
+  - name: restart nova
+    service:
+      name: "{{item}}"
+      state: restarted
+    with_items:
+      - "nova-api"
+      - "nova-consoleauth"
+      - "nova-scheduler"
+      - "nova-conductor"
+      - "nova-novncproxy"
