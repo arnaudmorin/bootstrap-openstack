@@ -65,9 +65,10 @@ Host *
   UserKnownHostsFile=/dev/null
 EOF
 
+cd /root/
 git clone https://github.com/arnaudmorin/isen-bootstrap-openstack.git
 mv /etc/ansible/ /etc/ansible.old
-ln -s /root/isen-bootstrap-openstack /etc/ansible
+ln -s /root/isen-bootstrap-openstack/ansible/ /etc/ansible
 
 cat <<EOF > /etc/ansible/openstack.yml
 clouds:
