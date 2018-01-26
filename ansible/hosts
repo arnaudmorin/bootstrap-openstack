@@ -4,6 +4,7 @@
 # Copyright (c) 2013, Jesse Keating <jesse.keating@rackspace.com>
 # Copyright (c) 2015, Hewlett-Packard Development Company, L.P.
 # Copyright (c) 2016, Rackspace Australia
+# Copyright (c) 2017, Arnaud Morin
 #
 # This module is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -75,7 +76,6 @@ def get_groups_from_server(server_vars, namegroup=True):
 
     region = server_vars['region']
     cloud = server_vars['cloud']
-    metadata = server_vars.get('metadata', {})
 
     # Create a group for the cloud
     groups.append(cloud)
@@ -98,24 +98,11 @@ def get_groups_from_server(server_vars, namegroup=True):
     if namegroup:
         groups.append(server_vars['name'])
 
-    for key in ('flavor', 'image'):
-        if 'name' in server_vars[key]:
-            groups.append('%s-%s' % (key, server_vars[key]['name']))
-
-    for key, value in iter(metadata.items()):
-        groups.append('meta-%s_%s' % (key, value))
-
-    az = server_vars.get('az', None)
-    if az:
-        # Make groups for az, region_az and cloud_region_az
-        groups.append(az)
-        groups.append('%s_%s' % (region, az))
-        groups.append('%s_%s_%s' % (cloud, region, az))
     return groups
 
 
-def get_host_groups(inventory, refresh=False, cloud=None):
-    (cache_file, cache_expiration_time) = get_cache_settings(cloud)
+def get_host_groups(inventory, refresh=False):
+    (cache_file, cache_expiration_time) = get_cache_settings()
     if is_cache_stale(cache_file, cache_expiration_time, refresh=refresh):
         groups = to_json(get_host_groups_from_cloud(inventory))
         with open(cache_file, 'w') as f:
@@ -126,25 +113,19 @@ def get_host_groups(inventory, refresh=False, cloud=None):
     return groups
 
 
-def append_hostvars(hostvars, groups, key, server, namegroup=False):
-    hostvars[key] = dict(
-        ansible_ssh_host=server['interface_ip'],
-        ansible_host=server['interface_ip'],
-        openstack=server)
-
-    metadata = server.get('metadata', {})
-    if 'ansible_user' in metadata:
-        hostvars[key]['ansible_user'] = metadata['ansible_user']
-
-    for group in get_groups_from_server(server, namegroup=namegroup):
-        groups[group].append(key)
+def append_hostvars(hostvars, name, private, public):
+    hostvars[name] = dict(
+        ansible_ssh_host=private,
+        ansible_host=private,
+        public_ip=public)
 
 
 def get_host_groups_from_cloud(inventory):
     groups = collections.defaultdict(list)
-    firstpass = collections.defaultdict(list)
     hostvars = {}
+    hosts = []
     list_args = {}
+
     if hasattr(inventory, 'extra_config'):
         use_hostnames = inventory.extra_config['use_hostnames']
         list_args['expand'] = inventory.extra_config['expand_hostvars']
@@ -155,26 +136,27 @@ def get_host_groups_from_cloud(inventory):
         use_hostnames = False
 
     for server in inventory.list_hosts(**list_args):
-
         if 'interface_ip' not in server:
             continue
-        firstpass[server['name']].append(server)
-    for name, servers in firstpass.items():
-        if len(servers) == 1 and use_hostnames:
-            append_hostvars(hostvars, groups, name, servers[0])
-        else:
-            server_ids = set()
-            # Trap for duplicate results
-            for server in servers:
-                server_ids.add(server['id'])
-            if len(server_ids) == 1 and use_hostnames:
-                append_hostvars(hostvars, groups, name, servers[0])
-            else:
-                for server in servers:
-                    append_hostvars(
-                        hostvars, groups, server['id'], server,
-                        namegroup=True)
+        
+        private_ip = server['interface_ip']
+        public_ip = server['interface_ip']
+
+        if 'management' in server['addresses']:
+            for address in server['addresses']['management']:
+                if address['version'] == 4:
+                    private_ip = address['addr']
+
+        if 'Ext-Net' in server['addresses']:
+            for address in server['addresses']['Ext-Net']:
+                if address['version'] == 4:
+                    public_ip = address['addr']
+
+        append_hostvars(hostvars, server['name'], private_ip, public_ip)
+        hosts.append(server['name'])
+
     groups['_meta'] = {'hostvars': hostvars}
+    groups['ovh'] = hosts
     return groups
 
 
@@ -190,14 +172,12 @@ def is_cache_stale(cache_file, cache_expiration_time, refresh=False):
     return True
 
 
-def get_cache_settings(cloud=None):
+def get_cache_settings():
     config = os_client_config.config.OpenStackConfig(
         config_files=os_client_config.config.CONFIG_FILES + CONFIG_FILES)
     # For inventory-wide caching
     cache_expiration_time = config.get_cache_expiration_time()
     cache_path = config.get_cache_path()
-    if cloud:
-        cache_path = '{0}_{1}'.format(cache_path, cloud)
     if not os.path.exists(cache_path):
         os.makedirs(cache_path)
     cache_file = os.path.join(cache_path, 'ansible-inventory.cache')
@@ -210,8 +190,6 @@ def to_json(in_dict):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='OpenStack Inventory Module')
-    parser.add_argument('--cloud', default=os.environ.get('OS_CLOUD'),
-                        help='Cloud name (default: None')
     parser.add_argument('--private',
                         action='store_true',
                         help='Use private address for ansible host')
@@ -236,7 +214,6 @@ def main():
             refresh=args.refresh,
             config_files=config_files,
             private=args.private,
-            cloud=args.cloud,
         )
         if hasattr(shade.inventory.OpenStackInventory, 'extra_config'):
             inventory_args.update(dict(
@@ -251,7 +228,7 @@ def main():
         inventory = shade.inventory.OpenStackInventory(**inventory_args)
 
         if args.list:
-            output = get_host_groups(inventory, refresh=args.refresh, cloud=args.cloud)
+            output = get_host_groups(inventory, refresh=args.refresh)
         elif args.host:
             output = to_json(inventory.get_host(args.host))
         print(output)

@@ -35,7 +35,7 @@
       - { section: "database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova" }
       - { section: "api_database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova_api" }
       - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
-      - { section: "DEFAULT", option: "my_ip", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
       - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
       - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
       - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
@@ -46,8 +46,8 @@
       - { section: "keystone_authtoken", option: "username", value: "nova" }
       - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
       - { section: "vnc", option: "enabled", value: "True" }
-      - { section: "vnc", option: "vncserver_listen", value: "{{ansible_all_ipv4_addresses[0]}}" }
-      - { section: "vnc", option: "vncserver_proxyclient_address", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "vnc", option: "vncserver_listen", value: "{{public_ip}}" }
+      - { section: "vnc", option: "vncserver_proxyclient_address", value: "$my_ip" }
       - { section: "glance", option: "api_servers", value: "http://glance:9292" }
       - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
       - { section: "placement", option: "os_region_name", value: "RegionOne" }

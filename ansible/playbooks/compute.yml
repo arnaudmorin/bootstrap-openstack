@@ -24,20 +24,23 @@
     apt: name={{item}} state=latest
     with_items:
       - neutron-linuxbridge-agent
+      - neutron-l3-agent
+      - neutron-dhcp-agent
+      - neutron-metadata-agent
       - nova-compute
 
   - name: configure nova
     ini_file: path=/etc/nova/nova.conf section={{item.section}} option={{item.option}} value={{item.value}}
     with_items:
       - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
-      - { section: "DEFAULT", option: "my_ip", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
       - { section: "DEFAULT", option: "use_neutron", value: "true" }
       - { section: "DEFAULT", option: "firewall_driver", value: "nova.virt.firewall.NoopFirewallDriver" }
       - { section: "api", option: "auth_strategy", value: "keystone" }
       - { section: "vnc", option: "enabled", value: "True" }
-      - { section: "vnc", option: "server_listen", value: "0.0.0.0" }
-      - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }
-      - { section: "vnc", option: "novncproxy_base_url", value: "http://nova:6080/vnc_auto.html" }
+      - { section: "vnc", option: "vncserver_listen", value: "0.0.0.0" }
+      - { section: "vnc", option: "vncserver_proxyclient_address", value: "$my_ip" }
+      - { section: "vnc", option: "novncproxy_base_url", value: "http://{{hostvars['nova']['public_ip']}}:6080/vnc_auto.html" }
       - { section: "glance", option: "api_servers", value: "http://glance:9292" }
       - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
       - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
@@ -89,15 +92,36 @@
       - { section: "keystone_authtoken", option: "project_name", value: "service" }
       - { section: "keystone_authtoken", option: "username", value: "neutron" }
       - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
-  - name: configure neutron linuxbridge
+  - name: configure neutron l2 agent
     ini_file: path=/etc/neutron/plugins/ml2/linuxbridge_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
     with_items:
       - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens3" }
       - { section: "vxlan", option: "enable_vxlan", value: "true" }
-      - { section: "vxlan", option: "local_ip", value: "{{ansible_all_ipv4_addresses[0]}}" }
+      - { section: "vxlan", option: "local_ip", value: "{{ansible_host}}" }
       - { section: "vxlan", option: "l2_population", value: "true" }
       - { section: "securitygroup", option: "enable_security_group", value: "true" }
       - { section: "securitygroup", option: "firewall_driver", value: "neutron.agent.linux.iptables_firewall.IptablesFirewallDriver" }
+    notify:
+      - restart neutron
+  - name: configure neutron l3 agent
+    ini_file: path=/etc/neutron/l3_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+    notify:
+      - restart neutron
+  - name: configure neutron dhcp agent
+    ini_file: path=/etc/neutron/dhcp_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+      - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
+      - { section: "DEFAULT", option: "enable_isolated_metadata", value: "true" }
+    notify:
+      - restart neutron
+  - name: configure neutron metadata agent
+    ini_file: path=/etc/neutron/metadata_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "nova_metadata_host", value: "nova" }
+      - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{password}}" }
     notify:
       - restart neutron
 
@@ -114,3 +138,6 @@
       state: restarted
     with_items:
       - "neutron-linuxbridge-agent"
+      - "neutron-dhcp-agent"
+      - "neutron-metadata-agent"
+      - "neutron-l3-agent"
