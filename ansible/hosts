@@ -71,36 +71,6 @@ import shade.inventory
 CONFIG_FILES = ['/etc/ansible/openstack.yaml', '/etc/ansible/openstack.yml']
 
 
-def get_groups_from_server(server_vars, namegroup=True):
-    groups = []
-
-    region = server_vars['region']
-    cloud = server_vars['cloud']
-
-    # Create a group for the cloud
-    groups.append(cloud)
-
-    # Create a group on region
-    groups.append(region)
-
-    # And one by cloud_region
-    groups.append("%s_%s" % (cloud, region))
-
-    # Check if group metadata key in servers' metadata
-    if 'group' in metadata:
-        groups.append(metadata['group'])
-
-    for extra_group in metadata.get('groups', '').split(','):
-        if extra_group:
-            groups.append(extra_group.strip())
-
-    groups.append('instance-%s' % server_vars['id'])
-    if namegroup:
-        groups.append(server_vars['name'])
-
-    return groups
-
-
 def get_host_groups(inventory, refresh=False):
     (cache_file, cache_expiration_time) = get_cache_settings()
     if is_cache_stale(cache_file, cache_expiration_time, refresh=refresh):
@@ -136,21 +106,19 @@ def get_host_groups_from_cloud(inventory):
         use_hostnames = False
 
     for server in inventory.list_hosts(**list_args):
-        if 'interface_ip' not in server:
+        if 'Ext-Net' not in server['addresses']:
             continue
+
+        for address in server['addresses']['Ext-Net']:
+            if address['version'] == 4:
+                public_ip = address['addr']
         
-        private_ip = server['interface_ip']
-        public_ip = server['interface_ip']
+        private_ip = public_ip
 
         if 'management' in server['addresses']:
             for address in server['addresses']['management']:
                 if address['version'] == 4:
                     private_ip = address['addr']
-
-        if 'Ext-Net' in server['addresses']:
-            for address in server['addresses']['Ext-Net']:
-                if address['version'] == 4:
-                    public_ip = address['addr']
 
         append_hostvars(hostvars, server['name'], private_ip, public_ip)
         hosts.append(server['name'])

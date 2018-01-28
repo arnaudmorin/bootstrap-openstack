@@ -58,9 +58,9 @@
   - name: initiate keystone
     shell: |
       keystone-manage bootstrap --bootstrap-password {{password}} \
-        --bootstrap-admin-url http://keystone:35357/v3/ \
-        --bootstrap-internal-url http://keystone:5000/v3/ \
-        --bootstrap-public-url http://keystone:5000/v3/ \
+        --bootstrap-admin-url http://{{hostvars['keystone']['public_ip']}}:35357/v3/ \
+        --bootstrap-internal-url http://{{hostvars['keystone']['public_ip']}}:5000/v3/ \
+        --bootstrap-public-url http://{{hostvars['keystone']['public_ip']}}:5000/v3/ \
         --bootstrap-region-id RegionOne && \
       touch /root/.ansible_initiate_keystone
     args:
@@ -79,9 +79,13 @@
       openrc_user: admin
       openrc_password: "{{password}}"
       openrc_project: admin
+      openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
     template:
       src: keystone/openrc.j2
       dest: /root/openrc_admin
+
+  - name: copy helper script
+    copy: src=keystone/helper dest=/root/helper
 
   - name: create project service
     shell: |
@@ -146,7 +150,7 @@
       source /root/openrc_admin
       openstack endpoint create \
         --region RegionOne \
-        compute {{item}} http://nova:8774/v2.1
+        compute {{item}} http://{{hostvars['nova']['public_ip']}}:8774/v2.1
       [ $? -eq 0 ] && touch /root/.ansible_endpoint_nova_{{item}}
     args:
       executable: /bin/bash
@@ -160,7 +164,7 @@
       source /root/openrc_admin
       openstack endpoint create \
         --region RegionOne \
-        placement {{item}} http://nova:8778
+        placement {{item}} http://{{hostvars['nova']['public_ip']}}:8778
       [ $? -eq 0 ] && touch /root/.ansible_endpoint_placement_{{item}}
     args:
       executable: /bin/bash
@@ -174,7 +178,7 @@
       source /root/openrc_admin
       openstack endpoint create \
         --region RegionOne \
-        image {{item}} http://glance:9292
+        image {{item}} http://{{hostvars['glance']['public_ip']}}:9292
       [ $? -eq 0 ] && touch /root/.ansible_endpoint_glance_{{item}}
     args:
       executable: /bin/bash
@@ -188,7 +192,7 @@
       source /root/openrc_admin
       openstack endpoint create \
         --region RegionOne \
-        network {{item}} http://neutron:9696
+        network {{item}} http://{{hostvars['neutron']['public_ip']}}:9696
       [ $? -eq 0 ] && touch /root/.ansible_endpoint_neutron_{{item}}
     args:
       executable: /bin/bash
@@ -244,6 +248,7 @@
       openrc_user: demo
       openrc_password: "{{password}}"
       openrc_project: demo
+      openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
     template:
       src: keystone/openrc.j2
       dest: /root/openrc_demo

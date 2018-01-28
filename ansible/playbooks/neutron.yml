@@ -25,6 +25,10 @@
     with_items:
       - neutron-server
       - neutron-plugin-ml2
+      - neutron-linuxbridge-agent
+      - neutron-l3-agent
+      - neutron-dhcp-agent
+      - neutron-metadata-agent
   - name: configure neutron
     ini_file: path=/etc/neutron/neutron.conf section={{item.section}} option={{item.option}} value={{item.value}}
     with_items:
@@ -66,6 +70,38 @@
       - { section: "securitygroup", option: "enable_ipset", value: "true" }
     notify:
       - restart neutron
+  - name: configure neutron l2 agent
+    ini_file: path=/etc/neutron/plugins/ml2/linuxbridge_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens4" }
+      - { section: "vxlan", option: "enable_vxlan", value: "true" }
+      - { section: "vxlan", option: "local_ip", value: "{{ansible_host}}" }
+      - { section: "vxlan", option: "l2_population", value: "true" }
+      - { section: "securitygroup", option: "enable_security_group", value: "true" }
+      - { section: "securitygroup", option: "firewall_driver", value: "neutron.agent.linux.iptables_firewall.IptablesFirewallDriver" }
+    notify:
+      - restart neutron
+  - name: configure neutron l3 agent
+    ini_file: path=/etc/neutron/l3_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+    notify:
+      - restart neutron
+  - name: configure neutron dhcp agent
+    ini_file: path=/etc/neutron/dhcp_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+      - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
+      - { section: "DEFAULT", option: "enable_isolated_metadata", value: "true" }
+    notify:
+      - restart neutron
+  - name: configure neutron metadata agent
+    ini_file: path=/etc/neutron/metadata_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    with_items:
+      - { section: "DEFAULT", option: "nova_metadata_host", value: "nova" }
+      - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{password}}" }
+    notify:
+      - restart neutron
 
   - name: initiate neutron database
     shell: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron && touch /root/.ansible_initiate_neutron_db
@@ -79,3 +115,7 @@
       state: restarted
     with_items:
       - "neutron-server"
+      - "neutron-dhcp-agent"
+      - "neutron-metadata-agent"
+      - "neutron-l3-agent"
+      - "neutron-linuxbridge-agent"
