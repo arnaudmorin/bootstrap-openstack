@@ -12,8 +12,6 @@ function log_handler {
 
 exec &> >(log_handler)
 
-dhclient ens4
-
 apt update
 apt -y install software-properties-common
 add-apt-repository -y cloud-archive:pike
