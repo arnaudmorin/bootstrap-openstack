@@ -28,7 +28,7 @@ function create_image_ubuntu(){(
 )}
 
 function create_key(){(
-    openstack keypair create --public-key ~/.ssh/id_rsa.pub fake
+    openstack keypair create --public-key ~/.ssh/authorized_keys fake
 )}
 
 function create_rules(){(
@@ -51,7 +51,7 @@ function create_server_private(){(
 
 function create_server_public(){(
     openstack server create \
-     --flavor m1.nano \
+     --flavor nano \
      --image cirros \
       --nic net-id=public \
      --security-group default \

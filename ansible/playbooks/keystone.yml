@@ -18,6 +18,7 @@
       dest: /etc/hosts
       line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
       state: present
+      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
     with_items: "{{ groups.all }}"
 
   - name: install memcached
@@ -65,9 +66,9 @@
       touch /root/.ansible_initiate_keystone
     args:
       creates: /root/.ansible_initiate_keystone
-  - name: ensure keystone is running
+  - name: ensure apache2 is running
     service:
-      name: keystone
+      name: apache2
       state: started
 
   - name: install openstack client

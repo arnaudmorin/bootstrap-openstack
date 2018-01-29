@@ -18,6 +18,7 @@
       dest: /etc/hosts
       line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
       state: present
+      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
     with_items: "{{ groups.all }}"
 
   - name: install nova
@@ -86,10 +87,10 @@
     shell: su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova && touch /root/.ansible_initiate_nova_cell_map
     args:
       creates: /root/.ansible_initiate_nova_cell_map
-#  - name: initiate cell1
-#    shell: su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova && touch /root/.ansible_initiate_nova_create_cell1
-#    args:
-#      creates: /root/.ansible_initiate_nova_create_cell1
+  - name: initiate cell1
+    shell: su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova && touch /root/.ansible_initiate_nova_create_cell1
+    args:
+      creates: /root/.ansible_initiate_nova_create_cell1
   - name: initiate nova database
     shell: su -s /bin/sh -c "nova-manage db sync" nova && touch /root/.ansible_initiate_nova_db
     args:

@@ -18,6 +18,7 @@
       dest: /etc/hosts
       line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
       state: present
+      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
     with_items: "{{ groups.all }}"
 
   - name: install neutron

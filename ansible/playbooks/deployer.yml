@@ -1,7 +1,5 @@
 ---
-- hosts: rabbit
-  vars:
-    password: zoblesmouches42
+- hosts: deployer
   tasks:
   - name: delete 127.0.1.1 line in /etc/hosts
     lineinfile:
@@ -21,15 +19,3 @@
       regexp: '.*{{ hostvars[item].inventory_hostname }}$'
     with_items: "{{ groups.all }}"
 
-  - name: install rabbitmq-server
-    apt: name=rabbitmq-server state=latest
-  - name: check openstack user
-    shell: rabbitmqctl list_users | grep -q openstack
-    register: user
-    ignore_errors: True
-  - name: create rabbitmq openstack user
-    command: rabbitmqctl add_user openstack {{ password }}
-    when: user|failed
-  - name: configure rights
-    command: rabbitmqctl set_permissions openstack ".*" ".*" ".*"
-    when: user|failed
