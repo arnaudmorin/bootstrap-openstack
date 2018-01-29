@@ -1,0 +1,49 @@
+---
+- hosts: horizon
+  tasks:
+  - name: delete 127.0.1.1 line in /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: '^127\.0\.1\.1.+'
+      state: absent
+  - name: delete ipv6 lines in /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'ip6'
+      state: absent
+  - name: add hosts in /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+      state: present
+      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
+    with_items: "{{ groups.all }}"
+
+  - name: install horizon
+    apt: name={{item}} state=latest
+    with_items:
+      - openstack-dashboard
+
+  - name: configure horizon
+    ini_file: path=/etc/openstack-dashboard/local_settings.py section= option={{item.option}} value={{item.value}}
+    with_items:
+      - { option: "OPENSTACK_HOST", value: "'{{hostvars['keystone']['public_ip']}}'" }
+      - { option: "OPENSTACK_KEYSTONE_URL", value: "\"http://%s:5000/v3\" % OPENSTACK_HOST" }
+      - { option: "OPENSTACK_API_VERSIONS", value: "{ 'identity': 3, 'image': 2, 'compute': 2 }" }
+      - { option: "OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT", value: "False" }
+      - { option: "OPENSTACK_KEYSTONE_DEFAULT_ROLE", value: "'user'" }
+      - { option: "OPENSTACK_KEYSTONE_DEFAULT_DOMAIN", value: "'Default'" }
+      - { option: "ALLOWED_HOSTS", value: "['*']" }
+      - { option: "DEFAULT_THEME", value: "'default'" }
+    notify:
+      - restart apache2
+
+  handlers:
+  - name: restart memcached
+    service:
+      name: memcached
+      state: restarted
+  - name: restart apache2
+    service:
+      name: apache2
+      state: restarted

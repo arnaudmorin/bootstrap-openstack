@@ -96,7 +96,6 @@ function create_network_private(){(
 
 function create_router(){(
     openstack router create router
-    neutron router-interface-add router private
-    neutron router-gateway-set router public
-    #neutron router-gateway-clear router
+    openstack router set --external-gateway public router
+    openstack router add subnet router 192.168.42.0/24
 )}
