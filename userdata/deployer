@@ -64,7 +64,7 @@ Host *
 EOF
 
 cd /root/
-git clone https://github.com/arnaudmorin/isen-bootstrap-openstack.git
+git clone https://github.com/arnaudmorin/bootstrap-openstack.git
 mv /etc/ansible/ /etc/ansible.old
 ln -s /root/isen-bootstrap-openstack/ansible/ /etc/ansible
 
