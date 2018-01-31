@@ -34,8 +34,11 @@ you     +----------->  |     deployer     |
 ```
 
 Every machine will have a public IP and be accessible from internet.
+
 Neutron and compute will also be connected through vRack.
+
 In this vRack we will route a failover IP block (/28 in my example) so that we can give public IPs to instances / routers.
+
 Deployer is used to configure the others (like an admin / jumphost machine).
 
 # Prepare your environment
@@ -49,7 +52,8 @@ See here:
 https://www.ovh.com/fr/support/new_nic.xml
 
 ## Create a cloud project
-image
+
+![Create cloud project](doc/create_cloud.gif "Create cloud project")
 
 ## Activate vrack on your cloud project
 image
