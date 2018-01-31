@@ -53,10 +53,11 @@ https://www.ovh.com/fr/support/new_nic.xml
 
 ## Create a cloud project
 
-![Create cloud project](doc/create_cloud.gif "Create cloud project")
+![Create cloud project](data/create_cloud.gif "Create cloud project")
 
 ## Activate vrack on your cloud project
-image
+
+![Enable vRack](data/enable_vrack.gif "Enable vRack")
 
 ## Create the subnet
 You must create a subnet without any VLAN ID.
