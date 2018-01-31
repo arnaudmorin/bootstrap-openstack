@@ -55,14 +55,19 @@ https://www.ovh.com/fr/support/new_nic.xml
 
 ![Create cloud project](data/create_cloud.gif "Create cloud project")
 
-## Activate vrack on your cloud project
+## Activate vRack on your cloud project
 
 ![Enable vRack](data/enable_vrack.gif "Enable vRack")
+
+## Link your project to this new vRack
+
+![Link vRack](data/link_vrack.gif "Link vRack")
 
 ## Create the subnet
 You must create a subnet without any VLAN ID.
 Name it **public** (important, as we refer to it with its name in the bootstrap script).
-image
+
+![Create Subnet](data/create_subnet.gif "Create Subnet")
 
 ## Create an OpenStack user
 image
