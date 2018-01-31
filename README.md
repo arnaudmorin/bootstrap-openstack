@@ -65,7 +65,7 @@ https://www.ovh.com/fr/support/new_nic.xml
 
 ## Create the subnet
 You must create a subnet without any VLAN ID.
-Name it **public** (important, as we refer to it with its name in the bootstrap script).
+Name it **public** and **disable DHCP** (important, as we refer to it with its name in the bootstrap script).
 
 ![Create Subnet](data/create_subnet.gif "Create Subnet")
 
