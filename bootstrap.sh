@@ -4,7 +4,7 @@ function boot(){(
     NAME=$1
     IP=$2
     openstack server create \
-        --key-name arnaud-ovh \
+        --key-name deployer \
         --nic net-id=Ext-Net \
         --nic net-id=public \
         --image 'Ubuntu 16.04' \

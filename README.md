@@ -70,13 +70,12 @@ Name it **public** and **disable DHCP** (important, as we refer to it with its n
 ![Create Subnet](data/create_subnet.gif "Create Subnet")
 
 ## Create an OpenStack user
-image
 
-## Add a SSH key
-Name it **deploy**.(important, we will refer to it in bootstrap script as well)
-image
+![Create User](data/create_user.gif "Create User")
 
 ## Download openrc file
+
+![Download openrc](data/openrc.gif "Download openrc")
 
 # Bootstrap
 ## Clone this repo
@@ -95,12 +94,18 @@ $ pip install python-openstackclient
 $ source openrc.sh
 ```
 
+## Add a SSH key
+Name it **deploy** (important, we will refer to it in bootstrap script as well).
+```sh
+$ openstack keypair create --private-key ~/.ssh/deploy.key deploy
+```
+
 ## Run bootstrap script
 ```sh
 $ ./bootstrap.sh
 ```
 
-This will create 8 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack service (see architecture).
+This will create 8 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack service (see architecture) and a one deployer that you will use as jump host to run ansible.
 
 Wait for the 8 instances to be ACTIVE.
 You can check the status with:
@@ -128,7 +133,7 @@ Ansible is using a dynamic inventory file that will ask openstack all instances 
 You must configure an openstack.yml file to help this dynamic inventory to set up.
 To do so, edit the file /etc/ansible/openstack.yml
 ```sh
-$ vi /etc/ansible/openstack.yml
+$ vim /etc/ansible/openstack.yml
 ```
 Change at least those 3 variables:
 ```
