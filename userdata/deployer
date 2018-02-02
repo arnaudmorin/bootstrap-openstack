@@ -73,9 +73,9 @@ clouds:
   ovh:
     auth:
       auth_url: https://auth.cloud.ovh.net/v2.0/
-      username: jUvqs5AKgYfY
+      username: FIXME
       password: FIXME
-      project_name: 5005081080213810
+      project_name: FIXME
     region_name: DE1
 ansible:
   use_hostnames: True

@@ -1,7 +1,7 @@
 # Introduction
 ## Objective
 
-Main objective is to create an small OpenStack infrastructure within an OVH public cloud infrastructure (which is also run by OpenStack).
+Main objective is to create an small OpenStack infrastructure within an OVH public cloud infrastructure (which is also run by OpenStack by the way :p So we will create an OpenStack over OpenStack).
 
 ## Architecture
 ```
@@ -26,11 +26,11 @@ you     +----------->  |     deployer     |
 |                  |   |                  |   |                  |         |     |
 +------------------+   +------------------+   +------------------+         +-----+
 
-                       +------------------+
-                       |                  |
-                       |     keystone     |
-                       |                  |
-                       +------------------+
++------------------+   +------------------+
+|                  |   |                  |
+|      horizon     |   |     keystone     |
+|                  |   |                  |
++------------------+   +------------------+
 ```
 
 Every machine will have a public IP and be accessible from internet.
@@ -77,6 +77,10 @@ Name it **public** and **disable DHCP** (important, as we refer to it with its n
 
 ![Download openrc](data/openrc.gif "Download openrc")
 
+## Order a /28 failover IP block
+
+TODO
+
 # Bootstrap
 ## Clone this repo
 ```sh
@@ -105,9 +109,9 @@ $ openstack keypair create --private-key ~/.ssh/deploy.key deploy
 $ ./bootstrap.sh
 ```
 
-This will create 8 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack service (see architecture) and a one deployer that you will use as jump host to run ansible.
+This will create 9 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack services (see architecture) and one deployer that you will use as jump host / ansible executor.
 
-Wait for the 8 instances to be ACTIVE.
+Wait for the instances to be ACTIVE.
 You can check the status with:
 
 ```sh
@@ -209,12 +213,25 @@ Then neutron
 $ ansible-playbook /etc/ansible/playbooks/neutron.yml
 ```
 
+### horizon
+Then horizon
+```sh
+$ ansible-playbook /etc/ansible/playbooks/horizon.yml
+```
+
 ### compute
 And finally, compute
 ```sh
 $ ansible-playbook /etc/ansible/playbooks/compute.yml
 ```
 
-# Enjoy
+# Configure
+## Keystone
+On keystone server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
+You will also find a helper script that contains basic functions to create images, networks, keypair, security groups, etc.
 
+## Horizon
+You can also browse the dashboard by opening url like this: http://*your_horizon_ip*/horizon/
+
+# Enjoy
 
