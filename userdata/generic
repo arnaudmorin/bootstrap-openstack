@@ -37,3 +37,5 @@ up ip link set dev $IFACE up
 up ip link set dev $IFACE mtu 9000
 down ip link set dev $IFACE down
 EOF
+
+ifup ens4

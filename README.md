@@ -102,6 +102,7 @@ $ source openrc.sh
 Name it **deploy** (important, we will refer to it in bootstrap script as well).
 ```sh
 $ openstack keypair create --private-key ~/.ssh/deploy.key deploy
+$ chmod 600 ~/.ssh/deploy.key
 ```
 
 ## Run bootstrap script
@@ -123,7 +124,7 @@ $ openstack server list
 Now that your infrastructure is ready, you can start the configuration of OpenStack itself from the deployer machine.
 
 ```sh
-$ ssh ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
+$ ssh -i ~/.ssh/deploy.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
 ```
 
 Now that you are inside the deployer, be root
@@ -223,6 +224,12 @@ $ ansible-playbook /etc/ansible/playbooks/horizon.yml
 And finally, compute
 ```sh
 $ ansible-playbook /etc/ansible/playbooks/compute.yml
+```
+
+### nova
+Then nova again, to register the compute in nova cell
+```sh
+$ ansible-playbook /etc/ansible/playbooks/nova.yml
 ```
 
 # Configure
