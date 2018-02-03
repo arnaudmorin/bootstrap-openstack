@@ -232,6 +232,12 @@ Then nova again, to register the compute in nova cell
 $ ansible-playbook /etc/ansible/playbooks/nova.yml
 ```
 
+### All in one shot
+Or if you want to perform all in one shot:
+```sh
+$ for s in deployer rabbit mysql keystone glance nova neutron horizon compute nova ; do ansible-playbook /etc/ansible/playbooks/$s.yml ; done
+```
+
 # Configure
 ## Keystone
 On keystone server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
