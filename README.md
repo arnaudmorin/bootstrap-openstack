@@ -121,7 +121,16 @@ Name it **public** and **disable DHCP** (important, as we refer to it with its n
 
 ## Order a /28 failover IP block
 
-TODO
+To do that, you can run the script data/order_ip_block.py
+```sh
+$ python3 order_ip_block.py
+Please pay the BC 12345678 --> https://www.ovh.com/cgi-bin/order/displayOrder.cgi?orderId=12345678&orderPassword=ABCD
+Done
+```
+
+Once your BC (Bon de Commande / order) is paid, you should receive a /28 in your manager. You can now move this pool of IP in your vRack by doing so:
+![Add IP in vRack](data/add_ip_vrack.gif "Add IP in vRack")
+
 
 # Bootstrap
 ## Clone this repo
