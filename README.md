@@ -105,9 +105,21 @@ https://www.ovh.com/fr/support/new_nic.xml
 
 ![Link vRack](data/link_vrack.gif "Link vRack")
 
-## Create the subnet
-You must create a subnet without any VLAN ID.
-Name it **public** and **disable DHCP** (important, as we refer to it with its name in the bootstrap script).
+## Create the subnets
+You must create two subnets:
+ - one with a VLAN ID (you choose, don't care) named **management** and **DHCP enable**
+ - one without any VLAN ID named **public** and **DHCP disabled**
+
+Respect the names as we refer to them within the bootstrap script.
+
+Example of creation of the management network from CLI:
+
+```sh
+$ openstack network create management
+$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management 192.168.1.0/24
+```
+
+Example of creation of the public network from manager:
 
 ![Create Subnet](data/create_subnet.gif "Create Subnet")
 

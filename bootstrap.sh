@@ -15,6 +15,7 @@ function boot(){(
     openstack server create \
         --key-name deploy \
         --nic net-id=Ext-Net \
+        --nic net-id=management \
         --nic net-id=public \
         --image 'Ubuntu 16.04' \
         --flavor c2-7 \

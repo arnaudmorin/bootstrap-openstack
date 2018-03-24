@@ -49,21 +49,15 @@
 #                When set to False, the inventory will return hosts from
 #                whichever other clouds it can contact. (Default: True)
 #
-# Also it is possible to pass the correct user by setting an ansible_user: $myuser
-# metadata attribute.
+# Also it is possible to pass the correct user by setting an ansible_user:
+# $myuser metadata attribute.
 
 import argparse
 import collections
 import os
 import sys
 import time
-from distutils.version import StrictVersion
-
-try:
-    import json
-except:
-    import simplejson as json
-
+import json
 import os_client_config
 import shade
 import shade.inventory
@@ -96,25 +90,19 @@ def get_host_groups_from_cloud(inventory):
     hosts = []
     list_args = {}
 
-    if hasattr(inventory, 'extra_config'):
-        use_hostnames = inventory.extra_config['use_hostnames']
-        list_args['expand'] = inventory.extra_config['expand_hostvars']
-        if StrictVersion(shade.__version__) >= StrictVersion("1.6.0"):
-            list_args['fail_on_cloud_config'] = \
-                inventory.extra_config['fail_on_errors']
-    else:
-        use_hostnames = False
-
     for server in inventory.list_hosts(**list_args):
+        # We skip the servers that does not have an IP in Ext-Net
         if 'Ext-Net' not in server['addresses']:
             continue
 
+        # Get Ext-Net IP
         for address in server['addresses']['Ext-Net']:
             if address['version'] == 4:
                 public_ip = address['addr']
-        
+
         private_ip = public_ip
 
+        # If server has an IP in management network
         if 'management' in server['addresses']:
             for address in server['addresses']['management']:
                 if address['version'] == 4:
