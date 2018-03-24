@@ -198,20 +198,8 @@ $ sudo su -
 ## Ansible
 ### Configure dynamic inventory file
 Ansible is using a dynamic inventory file that will ask openstack all instances that you currently have in your infrastructure.
-You must configure an openstack.yml file to help this dynamic inventory to set up.
-To do so, edit the file /etc/ansible/openstack.yml
-```sh
-$ vim /etc/ansible/openstack.yml
-```
-Change at least those 3 variables:
-```
-      username: aaa
-      password: bbb
-      project_name: ccc
-```
-
-Also, be sure that REGION_NAME is correct.
-You can find the value for these variables in your openrc.sh file.
+A config file should already be configured in /etc/ansible/openstack.yml
+You can check its content and update if necessary
 
 ### Check that the dynamic inventory works
 ```sh

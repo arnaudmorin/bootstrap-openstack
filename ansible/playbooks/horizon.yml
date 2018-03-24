@@ -1,23 +1,7 @@
 ---
 - hosts: horizon
   tasks:
-  - name: delete 127.0.1.1 line in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      regexp: '^127\.0\.1\.1.+'
-      state: absent
-  - name: delete ipv6 lines in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      regexp: 'ip6'
-      state: absent
-  - name: add hosts in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
-      state: present
-      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
-    with_items: "{{ groups.all }}"
+  - import_tasks: common.yml
 
   - name: install horizon
     apt: name={{item}} state=latest
@@ -27,7 +11,7 @@
   - name: configure horizon
     ini_file: path=/etc/openstack-dashboard/local_settings.py section= option={{item.option}} value={{item.value}}
     with_items:
-      - { option: "OPENSTACK_HOST", value: "'{{hostvars['keystone']['public_ip']}}'" }
+      - { option: "OPENSTACK_HOST", value: "'{{hostvars['keystone']['ansible_host']}}'" }
       - { option: "OPENSTACK_KEYSTONE_URL", value: "\"http://%s:5000/v3\" % OPENSTACK_HOST" }
       - { option: "OPENSTACK_API_VERSIONS", value: "{ 'identity': 3, 'image': 2, 'compute': 2 }" }
       - { option: "OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT", value: "False" }

@@ -4,6 +4,7 @@
     password: zoblesmouches42
   tasks:
   - import_tasks: common.yml
+
   - name: install rabbitmq-server
     apt: name=rabbitmq-server state=latest
   - name: check openstack user

@@ -3,23 +3,7 @@
   vars:
     password: zoblesmouches42
   tasks:
-  - name: delete 127.0.1.1 line in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      regexp: '^127\.0\.1\.1.+'
-      state: absent
-  - name: delete ipv6 lines in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      regexp: 'ip6'
-      state: absent
-  - name: add hosts in /etc/hosts
-    lineinfile:
-      dest: /etc/hosts
-      line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
-      state: present
-      regexp: '.*{{ hostvars[item].inventory_hostname }}$'
-    with_items: "{{ groups.all }}"
+  - import_tasks: common.yml
 
   - name: install neutron
     apt: name={{item}} state=latest

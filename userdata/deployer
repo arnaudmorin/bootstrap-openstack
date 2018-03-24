@@ -97,3 +97,30 @@ ansible:
   expand_hostvars: False
   fail_on_errors: True
 EOF
+
+# Configure network
+# ens3 --> Ext-Net interface. Mostly used to access API over regular internet connection
+# ens4 --> management interface. Mostly used by some OpenStack services to communicate
+# ens5 --> public interface. Used by neutron and compute to handle VM <--> Internet connectivity
+cat <<'EOF' > /etc/network/interfaces
+auto lo
+iface lo inet loopback
+
+auto ens3
+iface ens3 inet dhcp
+
+auto ens4
+iface ens4 inet dhcp
+
+auto ens5
+iface ens5 inet manual
+up ip link set dev $IFACE up
+up ip link set dev $IFACE mtu 9000
+down ip link set dev $IFACE down
+EOF
+
+# ens3 is already set up by ubuntu
+ifup ens4
+ifup ens5
+
+echo 'done'

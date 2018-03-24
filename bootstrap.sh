@@ -19,7 +19,7 @@ function boot(){(
         --nic net-id=public \
         --image 'Ubuntu 16.04' \
         --flavor c2-7 \
-        --user-data userdata/${NAME/-[0-9]*/} \
+        --user-data /tmp/userdata__$$ \
         $NAME
 )}
 
