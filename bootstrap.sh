@@ -3,6 +3,15 @@
 function boot(){(
     NAME=$1
     IP=$2
+    USERDATA=userdata/${NAME/-[0-9]*/}
+
+    cp $USERDATA /tmp/userdata__$$
+    sed -i -r "s/__OS_USERNAME__/$OS_USERNAME/" /tmp/userdata__$$
+    sed -i -r "s/__OS_PASSWORD__/$OS_PASSWORD/" /tmp/userdata__$$
+    sed -i -r "s/__OS_TENANT_NAME__/$OS_TENANT_NAME/" /tmp/userdata__$$
+    sed -i -r "s/__OS_TENANT_ID__/$OS_TENANT_ID/" /tmp/userdata__$$
+    sed -i -r "s/__OS_REGION_NAME__/$OS_REGION_NAME/" /tmp/userdata__$$
+
     openstack server create \
         --key-name deploy \
         --nic net-id=Ext-Net \
