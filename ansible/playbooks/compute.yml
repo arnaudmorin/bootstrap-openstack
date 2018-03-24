@@ -77,7 +77,7 @@
   - name: configure neutron l2 agent
     ini_file: path=/etc/neutron/plugins/ml2/linuxbridge_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
     with_items:
-      - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens4" }
+      - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens5" }
       - { section: "vxlan", option: "enable_vxlan", value: "true" }
       - { section: "vxlan", option: "local_ip", value: "{{ansible_host}}" }
       - { section: "vxlan", option: "l2_population", value: "true" }
