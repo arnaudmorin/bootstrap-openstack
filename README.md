@@ -8,7 +8,7 @@
       * [Create a cloud project](#create-a-cloud-project)
       * [Activate vRack on your cloud project](#activate-vrack-on-your-cloud-project)
       * [Link your project to this new vRack](#link-your-project-to-this-new-vrack)
-      * [Create the subnet](#create-the-subnet)
+      * [Create the subnets](#create-the-subnets)
       * [Create an OpenStack user](#create-an-openstack-user)
       * [Download openrc file](#download-openrc-file)
       * [Order a /28 failover IP block](#order-a-28-failover-ip-block)
@@ -36,6 +36,7 @@
          * [All in one shot](#all-in-one-shot)
    * [Configure](#configure)
       * [Keystone](#keystone-1)
+         * [Populate your OpenStack with default values](#populate-your-openstack-with-default-values)
       * [Horizon](#horizon-1)
    * [Enjoy](#enjoy)
 
@@ -293,6 +294,29 @@ $ for s in deployer rabbit mysql keystone glance nova neutron horizon compute no
 ## Keystone
 On keystone server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
 You will also find a helper script that contains basic functions to create images, networks, keypair, security groups, etc.
+
+### Populate your OpenStack with default values
+
+From your keystone node, as root:
+```sh
+# Source helper functions
+source helper
+
+# Following actions are done as admin
+source openrc_admin
+create_flavors
+create_image_cirros
+create_image_ubuntu
+# Before running this one, update the function in helper and source it again to ajust with your network settings
+create_network_public
+
+# Following actions are done as demo
+source openrc_demo
+create_network_private
+create_rules
+create_key
+create_server_public
+```
 
 ## Horizon
 You can also browse the dashboard by opening url like this: http://*your_horizon_ip*/horizon/
