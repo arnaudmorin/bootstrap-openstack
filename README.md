@@ -164,9 +164,15 @@ $ source openrc.sh
 
 ## Add a SSH key
 Name it **deploy** (important, we will refer to it in bootstrap script as well).
+Use the following command to create a new key.
 ```sh
 $ openstack keypair create --private-key ~/.ssh/deploy.key deploy
 $ chmod 600 ~/.ssh/deploy.key
+```
+
+Use the following command to reuse a previously existing key
+```sh
+$ openstack keypair create --public-key ~/.ssh/deploy.key.pub deploy
 ```
 
 ## Run bootstrap script
