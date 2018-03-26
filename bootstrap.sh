@@ -2,7 +2,6 @@
 
 function boot(){(
     NAME=$1
-    IP=$2
     USERDATA=userdata/${NAME/-[0-9]*/}
 
     cp $USERDATA /tmp/userdata__$$
