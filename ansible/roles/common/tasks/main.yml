@@ -1,0 +1,45 @@
+---
+- name: Update and install software-properties-common
+  apt:
+    name: software-properties-common
+    state: latest
+    update_cache: yes
+
+- name: Purge cloud-init
+  apt:
+    name: cloud-init
+    state: absent
+    purge: yes
+
+- name: install common packages
+  apt:
+    name: "{{item}}"
+    state: latest
+  loop:
+    - python
+    - chrony
+    - lnav
+
+- name: Update all packages to the latest version
+  apt:
+    upgrade: dist
+
+- name: delete 127.0.1.1 line in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^127\.0\.1\.1.+'
+    state: absent
+
+- name: delete ipv6 lines in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: 'ip6'
+    state: absent
+
+- name: add hosts in /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ hostvars[item].ansible_host }} {{ hostvars[item].inventory_hostname }}"
+    state: present
+    regexp: '.*{{ hostvars[item].inventory_hostname }}$'
+  with_items: "{{ groups.all }}"

@@ -1,0 +1,81 @@
+---
+  - name: copy helper script
+    become: yes
+    become_user: keystone
+    copy: src=helper dest=/var/lib/keystone/helper
+
+  - name: create project demo
+    become: yes
+    become_user: keystone
+    shell: |
+      . /var/lib/keystone/openrc_admin
+      openstack project create \
+        --domain default \
+        --description "Demo Project" \
+        demo
+      [ $? -eq 0 ] && touch /var/lib/keystone/.ansible_project_demo
+    args:
+      creates: /var/lib/keystone/.ansible_project_demo
+
+  - name: create demo user
+    become: yes
+    become_user: keystone
+    shell: |
+      . /var/lib/keystone/openrc_admin
+      openstack user create \
+        --domain default \
+        --password "{{password}}" \
+        demo
+      [ $? -eq 0 ] && touch /var/lib/keystone/.ansible_user_demo
+    args:
+      creates: /var/lib/keystone/.ansible_user_demo
+
+  - name: create role user
+    become: yes
+    become_user: keystone
+    shell: |
+      . /var/lib/keystone/openrc_admin
+      openstack role create user
+      [ $? -eq 0 ] && touch /var/lib/keystone/.ansible_role_create_user
+    args:
+      creates: /var/lib/keystone/.ansible_role_create_user
+
+  - name: add user role to demo user for demo project
+    become: yes
+    become_user: keystone
+    shell: |
+      . /var/lib/keystone/openrc_admin
+      openstack role add \
+        --project demo \
+        --user demo \
+        user
+      [ $? -eq 0 ] && touch /var/lib/keystone/.ansible_role_user_demo
+    args:
+      creates: /var/lib/keystone/.ansible_role_user_demo
+
+  - name: create openrc_demo file
+    vars:
+      openrc_user: demo
+      openrc_password: "{{password}}"
+      openrc_project: demo
+      openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
+    template:
+      src: openrc.j2
+      dest: openrc_demo
+
+  - name: init openstack
+    become: yes
+    become_user: keystone
+    shell: |
+      source /var/lib/keystone/openrc_admin
+      source /var/lib/keystone/helper
+      set -e
+      create_flavors
+      create_image_cirros
+      create_image_ubuntu
+      # Before running this one, update the function in helper and source it again to ajust with your network settings
+      create_network_public
+      touch /var/lib/keystone/.ansible_init_openstack_data
+    args:
+      executable: /usr/bin/bash
+      creates: /var/lib/keystone/.ansible_init_openstack_data

@@ -1,0 +1,11 @@
+---
+  - name: restart neutron
+    service:
+      name: "{{item}}"
+      state: restarted
+    with_items:
+      - "neutron-server"
+      - "neutron-dhcp-agent"
+      - "neutron-metadata-agent"
+      - "neutron-l3-agent"
+      - "neutron-linuxbridge-agent"

@@ -1,0 +1,13 @@
+---
+  - name: restart nova
+    service:
+      name: "{{item}}"
+      state: restarted
+    with_items:
+      - "nova-compute"
+  - name: restart neutron
+    service:
+      name: "{{item}}"
+      state: restarted
+    with_items:
+      - "neutron-linuxbridge-agent"

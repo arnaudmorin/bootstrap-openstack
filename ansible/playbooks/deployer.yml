@@ -1,5 +1,0 @@
----
-- hosts: deployer
-  tasks:
-  - import_tasks: common.yml
-

@@ -1,45 +1,28 @@
+**Table of Contents**
 
-
-   * [Introduction](#introduction)
-      * [Objective](#objective)
-      * [Architecture](#architecture)
-   * [Prepare your environment](#prepare-your-environment)
-      * [Create your OVH account](#create-your-ovh-account)
-      * [Create a cloud project](#create-a-cloud-project)
-      * [Activate vRack on your cloud project](#activate-vrack-on-your-cloud-project)
-      * [Link your project to this new vRack](#link-your-project-to-this-new-vrack)
-      * [Create the subnets](#create-the-subnets)
-      * [Create an OpenStack user](#create-an-openstack-user)
-      * [Download openrc file](#download-openrc-file)
-      * [Order a /28 failover IP block](#order-a-28-failover-ip-block)
-   * [Bootstrap](#bootstrap)
-      * [Clone this repo](#clone-this-repo)
-      * [Install openstack client](#install-openstack-client)
-      * [Source openrc file](#source-openrc-file)
-      * [Add a SSH key](#add-a-ssh-key)
-      * [Run bootstrap script](#run-bootstrap-script)
-   * [Deploy](#deploy)
-      * [Connect to deployer](#connect-to-deployer)
-      * [Ansible](#ansible)
-         * [Configure dynamic inventory file](#configure-dynamic-inventory-file)
-         * [Check that the dynamic inventory works](#check-that-the-dynamic-inventory-works)
-         * [deployer](#deployer)
-         * [rabbit](#rabbit)
-         * [mysql](#mysql)
-         * [keystone](#keystone)
-         * [glance](#glance)
-         * [nova](#nova)
-         * [neutron](#neutron)
-         * [horizon](#horizon)
-         * [compute](#compute)
-         * [nova](#nova-1)
-         * [All in one shot](#all-in-one-shot)
-   * [Configure](#configure)
-      * [Keystone](#keystone-1)
-         * [Populate your OpenStack with default values](#populate-your-openstack-with-default-values)
-      * [Horizon](#horizon-1)
-   * [Enjoy](#enjoy)
-
+- [Introduction](#introduction)
+    - [Objective](#objective)
+    - [Architecture](#architecture)
+- [Prepare your environment](#prepare-your-environment)
+    - [Create your OVH account](#create-your-ovh-account)
+    - [Create a cloud project](#create-a-cloud-project)
+    - [Activate vRack on your cloud project](#activate-vrack-on-your-cloud-project)
+    - [Link your project to this new vRack](#link-your-project-to-this-new-vrack)
+    - [Create ovhrc file](#create-ovhrc-file)
+    - [Order a /28 failover IP block](#order-a-28-failover-ip-block)
+- [Bootstrap](#bootstrap)
+    - [Clone this repo](#clone-this-repo)
+    - [Install terraform](#install-terraform)
+    - [Source openrc file](#source-openrc-file)
+    - [Terraform](#terraform)
+    - [Ansible](#ansible)
+        - [Configure inventory file](#configure-inventory-file)
+        - [Playbooks](#playbooks)
+        - [Run the playbook](#run-the-playbook)
+- [Configure](#configure)
+    - [Keystone](#keystone)
+    - [Horizon](#horizon)
+- [Enjoy](#enjoy)
 
 # Introduction
 ## Objective
@@ -106,31 +89,31 @@ https://www.ovh.com/fr/support/new_nic.xml
 
 ![Link vRack](data/link_vrack.gif "Link vRack")
 
-## Create the subnets
-You must create two subnets:
- - one with a VLAN ID (you choose, don't care) named **management** and **DHCP enable**
- - one without any VLAN ID named **public** and **DHCP disabled**
+## Create ovhrc file
 
-Respect the names as we refer to them within the bootstrap script.
-
-Example of creation of the management network from CLI:
-
-```sh
-$ openstack network create management
-$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management 192.168.1.0/24
+- first register an app on ovh api
+  https://eu.api.ovh.com/createApp/
+- then get api token
+``` bash
+curl -XPOST -H"X-Ovh-Application: YOUR_APP_KEY" -H "Content-type: application/json" \
+https://eu.api.ovh.com/1.0/auth/credential  -d '{
+    "accessRules": [
+        { "method": "GET", "path": "/*" },
+        { "method": "PUT", "path": "/*" },
+        { "method": "POST", "path": "/*" },
+        { "method": "DELETE", "path": "/*" }
+    ]
+}'
+{"validationUrl":"https://eu.api.ovh.com/auth/?credentialToken=Am0xPp...","consumerKey":"YOUR_CONSUMER_KEY","state":"pendingValidation"}
 ```
 
-Example of creation of the public network from manager:
-
-![Create Subnet](data/create_subnet.gif "Create Subnet")
-
-## Create an OpenStack user
-
-![Create User](data/create_user.gif "Create User")
-
-## Download openrc file
-
-![Download openrc](data/openrc.gif "Download openrc")
+- create an `ovhrc` file with api creds from json:
+``` bash
+OVH_ENDPOINT="ovh-eu"
+OVH_APPLICATION_KEY="YOUR_APP_KEY"
+OVH_APPLICATION_SECRET="YOUR_APP_SECRET"
+OVH_CONSUMER_KEY="YOUR_CONSUMER_KEY"
+```
 
 ## Order a /28 failover IP block
 
@@ -152,180 +135,59 @@ $ git clone https://github.com/arnaudmorin/bootstrap-openstack.git
 $ cd bootstrap-openstack
 ```
 
-## Install openstack client
-```sh
-$ pip install python-openstackclient
-```
+## Install terraform
+
+see [Terraform install page](https://www.terraform.io/intro/getting-started/install.html)
 
 ## Source openrc file
 ```sh
-$ source openrc.sh
+$ source ovhrc
 ```
 
-## Add a SSH key
-Name it **deploy** (important, we will refer to it in bootstrap script as well).
-Use the following command to create a new key.
-```sh
-$ openstack keypair create --private-key ~/.ssh/deploy.key deploy
-$ chmod 600 ~/.ssh/deploy.key
-```
+## Terraform
 
-Use the following command to reuse a previously existing key
-```sh
-$ openstack keypair create --public-key ~/.ssh/deploy.key.pub deploy
-```
-
-## Run bootstrap script
-```sh
-$ ./bootstrap.sh
-```
-
-This will create 9 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack services (see architecture) and one deployer that you will use as jump host / ansible executor.
-
-Wait for the instances to be ACTIVE.
-You can check the status with:
+The terraform script creates an openstack user through the `ovh` provider, then use its credentials
+to setup the `openstack` provider. Thus we have to `apply` the terraform script in 3 steps:
 
 ```sh
-$ openstack server list
+$ terraform init
+$ terraform apply -var project_id=123ABC...XX99  -var vrack_id=pn-XXXXXX -target ovh_publiccloud_user.openstack
+$ terraform apply -var project_id=123ABC...XX99  -var vrack_id=pn-XXXXXX
+
 ```
 
-# Deploy
-## Connect to deployer
-Now that your infrastructure is ready, you can start the configuration of OpenStack itself from the deployer machine.
+This will create 8 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack services (see architecture) and one deployer that you will use as jump host / ansible executor.
 
-```sh
-$ ssh -i ~/.ssh/deploy.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
-```
-
-Now that you are inside the deployer, be root
-```sh
-$ sudo su -
-```
+Once instances are all up and active, terraform will run the ansible playbook on the deployer.
 
 ## Ansible
-### Configure dynamic inventory file
-Ansible is using a dynamic inventory file that will ask openstack all instances that you currently have in your infrastructure.
-A config file should already be configured in /etc/ansible/openstack.yml
-You can check its content and update if necessary
+### Configure inventory file
+Ansible is using a static inventory file generated by terraform and uploaded through user-data on the deployer instance
+in `/tmp/inventory`
 
-### Check that the dynamic inventory works
-```sh
-$ /etc/ansible/hosts --list
-```
+### Playbooks
+Ansible playbooks are stored in the `./ansible` directory and uploaded on the deployer instance in `/tmp/ansible` through
+ssh in a terraform post provisionning action
 
-should return something ending like:
-```
-...
-  "ovh": [
-    "horizon",
-    "mysql",
-    "compute-1",
-    "neutron",
-    "glance",
-    "nova",
-    "keystone",
-    "rabbit",
-    "deployer"
-  ]
-}
+### Run the playbook
+
+Terraform applies the playbooks by running the following commands
+
+``` bash
+eval $(ssh-agent) && ssh-add /tmp/ssh-priv-key
+export ANSIBLE_HOST_KEY_CHECKING=False
+ansible-playbook -e 'ansible_python_interpreter=/usr/bin/python3' -i /tmp/inventory /tmp/ansible/site.yml
 ```
 
-### deployer
-Run ansible on deployer itself, so it can learn the different IP addresses of your infrastructure.
-```sh
-$ ansible-playbook /etc/ansible/playbooks/deployer.yml
-```
-
-### rabbit
-Continue with rabbit
-```sh
-$ ansible-playbook /etc/ansible/playbooks/rabbit.yml
-```
-
-### mysql
-Then mysql
-```sh
-$ ansible-playbook /etc/ansible/playbooks/mysql.yml
-```
-
-### keystone
-Then keystone
-```sh
-$ ansible-playbook /etc/ansible/playbooks/keystone.yml
-```
-
-### glance
-Then glance
-```sh
-$ ansible-playbook /etc/ansible/playbooks/glance.yml
-```
-
-### nova
-Then nova
-```sh
-$ ansible-playbook /etc/ansible/playbooks/nova.yml
-```
-
-### neutron
-Then neutron
-```sh
-$ ansible-playbook /etc/ansible/playbooks/neutron.yml
-```
-
-### horizon
-Then horizon
-```sh
-$ ansible-playbook /etc/ansible/playbooks/horizon.yml
-```
-
-### compute
-And finally, compute
-```sh
-$ ansible-playbook /etc/ansible/playbooks/compute.yml
-```
-
-### nova
-Then nova again, to register the compute in nova cell
-```sh
-$ ansible-playbook /etc/ansible/playbooks/nova.yml
-```
-
-### All in one shot
-Or if you want to perform all in one shot:
-```sh
-$ for s in deployer rabbit mysql keystone glance nova neutron horizon compute nova ; do ansible-playbook /etc/ansible/playbooks/$s.yml ; done
-```
+Ansible connects to nodes instances by using an ssh keypair generated by terraform, from which the ssh pub key
+has been uploaded through user-data to all nodes as an authorized_key.
 
 # Configure
+
 ## Keystone
-On keystone server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
-You will also find a helper script that contains basic functions to create images, networks, keypair, security groups, etc.
-
-### Populate your OpenStack with default values
-
-From your keystone node, as root:
-```sh
-# Source helper functions
-source helper
-
-# Following actions are done as admin
-source openrc_admin
-create_flavors
-create_image_cirros
-create_image_ubuntu
-# Before running this one, update the function in helper and source it again to ajust with your network settings
-create_network_public
-
-# Following actions are done as demo
-source openrc_demo
-create_network_private
-create_rules
-create_key
-create_server_public
-```
+On keystone server, you will find the openrc_admin in `/var/lib/keystone` and openrc_demo in `/home/ubuntu` files that can be used to access your brand new OpenStack infrastructure
 
 ## Horizon
 You can also browse the dashboard by opening url like this: http://*your_horizon_ip*/horizon/
 
 # Enjoy
-

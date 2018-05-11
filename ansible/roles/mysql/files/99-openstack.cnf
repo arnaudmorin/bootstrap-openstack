@@ -1,0 +1,15 @@
+[client]
+default-character-set = utf8
+
+[mysqld]
+bind-address = 0.0.0.0
+default-storage-engine = innodb
+collation-server = utf8_general_ci
+init-connect = 'SET NAMES utf8'
+character-set-server = utf8
+innodb_file_per_table = on
+max_connections = 4096
+
+[mysql]
+default-character-set = utf8
+

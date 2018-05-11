@@ -1,1 +1,3 @@
 gh-md-toc
+terraform.tfstate*
+.terraform

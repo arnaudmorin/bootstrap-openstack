@@ -1,0 +1,55 @@
+- hosts: '*'
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+
+- hosts: rabbit
+  become: yes
+  become_method: sudo
+  roles:
+    - rabbit
+
+- hosts: mysql
+  become: yes
+  become_method: sudo
+  roles:
+    - mysql
+
+- hosts: keystone
+  roles:
+    - keystone
+
+- hosts: glance
+  become: yes
+  become_method: sudo
+  roles:
+    - glance
+
+- hosts: neutron
+  become: yes
+  become_method: sudo
+  roles:
+    - neutron
+
+- hosts: nova
+  become: yes
+  become_method: sudo
+  roles:
+    - nova
+
+- hosts: horizon
+  become: yes
+  become_method: sudo
+  roles:
+    - horizon
+
+- hosts: 'compute-*'
+  become: yes
+  become_method: sudo
+  roles:
+    - compute
+
+- hosts: keystone
+  roles:
+    - openstack-init

@@ -1,0 +1,11 @@
+---
+  - name: restart nova
+    service:
+      name: "{{item}}"
+      state: restarted
+    with_items:
+      - "nova-api"
+      - "nova-consoleauth"
+      - "nova-scheduler"
+      - "nova-conductor"
+      - "nova-novncproxy"

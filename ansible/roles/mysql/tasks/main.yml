@@ -1,0 +1,62 @@
+---
+  - name: install mariadb and deps
+    apt: name={{item}} state=latest update_cache=yes
+    with_items:
+      - mariadb-server
+      - python3-pip
+      - libmariadbclient-dev-compat
+
+  - name: install python mysql client
+    pip: name=mysqlclient
+
+  - name: replace utf8mb4 with utf8 in mariadb conf files
+    replace:
+      path: '/etc/mysql/mariadb.conf.d/{{item}}'
+      regexp: 'utf8mb4'
+      replace: 'utf8'
+    with_items:
+      - 50-client.cnf
+      - 50-mysql-clients.cnf
+      - 50-mysqld_safe.cnf
+      - 50-server.cnf
+    register: mysql_restart
+
+  - name: configure mysql
+    copy: src=99-openstack.cnf dest=/etc/mysql/conf.d/99-openstack.cnf
+    register: mysql_restart
+
+  - name: configure mariadb
+    copy: src=99-openstack.cnf dest=/etc/mysql/mariadb.conf.d/99-openstack.cnf
+    register: mysql_restart
+
+  - name: ensure mysql is restarted before creating dbs
+    service:
+      name: mysql
+      state: restarted
+    when: mysql_restart|changed
+
+      # be sure databases are created with utf8 instead of utf8mb4 is taken
+      # into account (e.g: mysql restart ) so don't use an ansible notifier
+      # with handlers because the restart would be executed after all tasks
+  - name: create databases
+    mysql_db: name={{item}} state=present
+    with_items:
+      - keystone
+      - nova
+      - nova_api
+      - nova_cell0
+      - neutron
+      - glance
+
+  - name: create users
+    mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present host=%
+    with_items:
+      - keystone
+      - nova
+      - neutron
+      - glance
+
+  - name: ensure mysql is running
+    service:
+      name: mysql
+      state: started
