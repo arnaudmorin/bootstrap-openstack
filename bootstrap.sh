@@ -3,7 +3,7 @@
 function create_keypair(){(
     openstack keypair show zob 2>&1 >/dev/null
     if [ $? -eq 1 ] ; then
-        openstack keypair create --public-key data/zob.pub zob
+        openstack keypair create --public-key data/zob.key.pub zob
     fi
 )}
 

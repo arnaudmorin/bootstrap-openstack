@@ -16,7 +16,6 @@
       * [Clone this repo](#clone-this-repo)
       * [Install openstack client](#install-openstack-client)
       * [Source openrc file](#source-openrc-file)
-      * [Add a SSH key](#add-a-ssh-key)
       * [Run bootstrap script](#run-bootstrap-script)
    * [Deploy](#deploy)
       * [Connect to deployer](#connect-to-deployer)
@@ -162,19 +161,6 @@ $ pip install python-openstackclient
 $ source openrc.sh
 ```
 
-## Add a SSH key
-Name it **deploy** (important, we will refer to it in bootstrap script as well).
-Use the following command to create a new key.
-```sh
-$ openstack keypair create --private-key ~/.ssh/deploy.key deploy
-$ chmod 600 ~/.ssh/deploy.key
-```
-
-Use the following command to reuse a previously existing key
-```sh
-$ openstack keypair create --public-key ~/.ssh/deploy.key.pub deploy
-```
-
 ## Run bootstrap script
 ```sh
 $ ./bootstrap.sh
@@ -194,7 +180,7 @@ $ openstack server list
 Now that your infrastructure is ready, you can start the configuration of OpenStack itself from the deployer machine.
 
 ```sh
-$ ssh -i ~/.ssh/deploy.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
+$ ssh -i data/zob.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
 ```
 
 Now that you are inside the deployer, be root
