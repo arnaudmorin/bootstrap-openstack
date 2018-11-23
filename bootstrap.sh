@@ -1,5 +1,12 @@
 #!/bin/bash
 
+function create_keypair(){(
+    openstack keypair show zob 2>&1 >/dev/null
+    if [ $? -eq 1 ] ; then
+        openstack keypair create --public-key data/zob.pub zob
+    fi
+)}
+
 function boot(){(
     NAME=$1
     IP=$2
@@ -13,7 +20,7 @@ function boot(){(
     sed -i -r "s/__OS_REGION_NAME__/$OS_REGION_NAME/" /tmp/userdata__$$
 
     openstack server create \
-        --key-name deploy \
+        --key-name zob \
         --nic net-id=Ext-Net \
         --nic net-id=management \
         --nic net-id=public \
@@ -23,6 +30,7 @@ function boot(){(
         $NAME
 )}
 
+create_keypair
 boot deployer
 boot rabbit
 boot mysql
