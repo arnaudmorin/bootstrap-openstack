@@ -11,7 +11,7 @@
       id: f1656f24c74cd1d8
   - name: add apt repository for mariadb
     apt_repository:
-      repo: deb [arch=amd64,i386,ppc64el] http://mariadb.kisiek.net/repo/10.1/ubuntu xenial main
+      repo: deb [arch=amd64,arm64,i386,ppc64el] http://mariadb.mirrors.ovh.net/MariaDB/repo/10.1/ubuntu xenial main
       state: present
   - name: install mysql
     apt: name={{item}} state=latest update_cache=yes
