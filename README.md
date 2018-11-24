@@ -299,8 +299,8 @@ source openrc_admin
 create_flavors
 create_image_cirros
 create_image_ubuntu
-# Before running this one, update the function in helper and source it again to ajust with your network settings
-create_network_public
+# Before running this one, adjust the parameters with your network settings
+create_network_public 5.135.0.208/28 5.135.0.222
 
 # Following actions are done as demo
 source openrc_demo

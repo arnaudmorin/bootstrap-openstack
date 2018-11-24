@@ -32,19 +32,15 @@ function create_key(){(
 )}
 
 function create_rules(){(
-    openstack security group rule create --ingress --protocol tcp --dst-port 1:65535 default
-    openstack security group rule create --ingress --protocol udp --dst-port 1:65535 default
-    openstack security group rule create --ingress --protocol icmp                   default
-    openstack security group rule create --egress  --protocol tcp --dst-port 1:65535 default
-    openstack security group rule create --egress  --protocol udp --dst-port 1:65535 default
-    openstack security group rule create --egress  --protocol icmp                   default
+    openstack security group rule create --ingress --protocol any default
+    openstack security group rule create --egress  --protocol any default
 )}
 
 function create_server_private(){(
     openstack server create \
      --flavor nano \
      --image cirros \
-     --nic net-id=private \
+     --net private \
      --key-name fake \
      n1
 )}
@@ -53,8 +49,7 @@ function create_server_public(){(
     openstack server create \
      --flavor nano \
      --image cirros \
-      --nic net-id=public \
-     --security-group default \
+      --net public \
       --key-name fake \
      p1
 )}
@@ -70,18 +65,22 @@ function attach_floating(){(
 )}
 
 function create_network_public(){(
+    RANGE=$1
+    GATEWAY=$2
+
     openstack network create \
      --share \
      --external \
      --provider-physical-network provider \
      --provider-network-type flat \
      public
+
     openstack subnet create \
      --network public \
-     --subnet-range "5.135.0.208/28" \
-     --gateway 5.135.0.222 \
+     --subnet-range "$RANGE" \
+     --gateway $GATEWAY \
      --dns-nameserver 8.8.8.8 \
-     "5.135.0.208/28"
+     "$RANGE"
 )}
 
 function create_network_private(){(
