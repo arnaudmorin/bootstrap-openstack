@@ -57,6 +57,11 @@
 
   - name: install openstack client
     apt: name=python-openstackclient state=latest
+  - name: install openstack client bash completion
+    shell: |
+      openstack complete > /etc/bash_completion.d/openstack
+    args:
+      creates: /etc/bash_completion.d/openstack
   - name: install python shade
     apt: name=python-shade state=latest
   - name: create openrc_admin file
