@@ -32,8 +32,17 @@ function create_key(){(
 )}
 
 function create_rules(){(
-    openstack security group rule create --ingress --protocol any default
-    openstack security group rule create --egress  --protocol any default
+    # NOTE(arnaud): this is not working with old openstack client
+    #openstack security group rule create --ingress --protocol any default
+    #openstack security group rule create --egress  --protocol any default
+
+    # Old way
+    openstack security group rule create --ingress --protocol tcp --dst-port 1:65535 default
+    openstack security group rule create --ingress --protocol udp --dst-port 1:65535 default
+    openstack security group rule create --ingress --protocol icmp                   default
+    openstack security group rule create --egress  --protocol tcp --dst-port 1:65535 default
+    openstack security group rule create --egress  --protocol udp --dst-port 1:65535 default
+    openstack security group rule create --egress  --protocol icmp                   default
 )}
 
 function create_server_private(){(
