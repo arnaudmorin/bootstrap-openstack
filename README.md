@@ -180,6 +180,7 @@ $ openstack server list
 Now that your infrastructure is ready, you can start the configuration of OpenStack itself from the deployer machine.
 
 ```sh
+$ chmod 600 data/zob.key
 $ ssh -i data/zob.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
 ```
 
