@@ -47,37 +47,39 @@ Main objective is to create an small OpenStack infrastructure within an OVH publ
 
 ## Architecture
 ```
-                       +------------------+
-              ssh      |                  |
-you     +----------->  |     deployer     |
-                       |                  |
-                       +------------------+
+             ssh       +----------+
+you     +----------->  | deployer |
+                       +----------+
+                            |
+                        ansible (ssh)
+                            |
 
-                           ansible (ssh)
++----------+   +----------+   +----------+         +---+
+|  rabbit  |   |   nova   |   |  neutron | <-----> | V |
++----------+   +----------+   +----------+         | R |
+                                                   | a |
++----------+   +----------+   +----------+         | c |
+|  mysql   |   |  glance  |   |  compute | <-----> | k |
++----------+   +----------+   +----------+         +---+
+                                                     |
++----------+   +----------+                          |
+|  horizon |   | keystone |                          |
++----------+   +----------+                          |
+                                          Instances public access
+             |                             with /28 network block
+       HTTP API access                               |
+             |                                       |
+             +----------+----------------------------+
+                        |
+                    Internet
 
-
-+------------------+   +------------------+   +------------------+         +-----+
-|                  |   |                  |   |                  |         |     |
-|      rabbit      |   |       nova       |   |      neutron     | +-----> |     |
-|                  |   |                  |   |                  |         |  v  |
-+------------------+   +------------------+   +------------------+         |  R  |
-                                                                           |  a  | <--------+ Failover IP
-+------------------+   +------------------+   +------------------+         |  c  |            xxx.xxx.xxx.xxx/28
-|                  |   |                  |   |                  |         |  k  |
-|      mysql       |   |      glance      |   |      compute     | +-----> |     |
-|                  |   |                  |   |                  |         |     |
-+------------------+   +------------------+   +------------------+         +-----+
-
-+------------------+   +------------------+
-|                  |   |                  |
-|      horizon     |   |     keystone     |
-|                  |   |                  |
-+------------------+   +------------------+
 ```
 
 Every machine will have a public IP and be accessible from internet.
 
-Neutron and compute will also be connected through vRack.
+They will also be connected to each other with a management network.
+
+Neutron and compute will also be connected to a special network through vRack.
 
 In this vRack we will route a failover IP block (/28 in my example) so that we can give public IPs to instances / routers.
 
@@ -166,7 +168,11 @@ $ source openrc.sh
 $ ./bootstrap.sh
 ```
 
-This will create 9 instances, connected to both public network (Ext-Net) and vRack (public), one for each OpenStack services (see architecture) and one deployer that you will use as jump host / ansible executor.
+This will create 9 instances, connected to an external network (Ext-Net) and two vRack networks (public and management).
+
+Each instance is going to be dedicated to one of the core OpenStack services (see architecture).
+
+You will also have a special instance named deployer which you will use as jump host / ansible executor.
 
 Wait for the instances to be ACTIVE.
 You can check the status with:
@@ -242,7 +248,12 @@ $ ansible-playbook /etc/ansible/playbooks/keystone.yml
 ```
 
 ### glance
-Then glance
+Glance is one of the easiest service to install, so try to install it by your own.
+
+To do so, you can read the documentation here: https://docs.openstack.org/glance/pike/install/index.html
+
+Or, if you are eager to get to the end of this boostraping, you can use:
+
 ```sh
 $ ansible-playbook /etc/ansible/playbooks/glance.yml
 ```

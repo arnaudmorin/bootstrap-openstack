@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <title>Introduction OpenStack / travaux pratiques</title>
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/ovh.css">
+
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!-- Printing and PDF exports -->
+        <script>
+            var link = document.createElement( 'link' );
+            link.rel = 'stylesheet';
+            link.type = 'text/css';
+            link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+            document.getElementsByTagName( 'head' )[0].appendChild( link );
+        </script>
+    </head>
+    <body>
+        <div class="reveal">
+            <div class="slides">
+                <section data-markdown data-background="data/ovh-meet-up-brest-digit-event.jpg">
+                    # OpenStack
+                    ### Je met les mains dedans
+                    ![OVH](data/logo-ovh-meet-up-small.png)
+                </section>
+
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## Virtualization is not Cloud
+                    </section>
+                    <section data-markdown>
+                        * Popek et Goldberg (1974)
+                            * Equivalence
+                            * Efficiency
+                            * Control
+                        * Emulation is not virtualization
+                    </section>
+                    <section data-markdown>
+                        ## Cloud is not only virtualization
+                    </section>
+                    <section data-markdown>
+                        * API REST
+                        * Automation
+                        * As A Service
+                    </section>
+                    <section data-markdown>
+                        ## Vocabulary
+                    </section>
+                    <section data-markdown>
+                        * Compute
+                            * instance
+                            * network
+                                * L2
+                                * L3
+                                * Floating IPs
+                                * Security groups
+                            * image
+                            * flavor
+                            * Keypair
+                        * Storage
+                            * objet
+                            * block --> volume / disk for instances
+                    </section>
+                </section>
+
+                <section data-background="data/slide.png">
+                    <section data-markdown>
+                        ## OpenStack
+                    </section>
+                    <section data-markdown>
+                        * Open Source
+                        * Python
+                        * API Store
+                        * First release in 2010 (nova and swift only)
+                        * At OVH
+                          * Swift since 2012 (hubic)
+                          * Runabove in 2014
+                          * Public Cloud in 2015
+                          * ...♥
+                    </section>
+                    <section data-markdown>
+                        ## Logical Architecture
+                    </section>
+                    <section data-markdown data-background="data/osog_0001.png" data-background-color="white" data-background-size="contain">
+                    </section>
+                    <section>
+                        <h2>Your lab architecture</h2>
+<pre class='stretch'>
+                             ssh       +----------+
+                you     +----------->  | deployer |
+                                       +----------+
+                                            |
+                                        ansible (ssh)
+                                            |
+
+                +----------+   +----------+   +----------+         +---+
+                |  rabbit  |   |   nova   |   |  neutron | <-----> | V |
+                +----------+   +----------+   +----------+         | R |
+                                                                   | a |
+                +----------+   +----------+   +----------+         | c |
+                |  mysql   |   |  glance  |   |  compute | <-----> | k |
+                +----------+   +----------+   +----------+         +---+
+                                                                     |
+                +----------+   +----------+                          |
+                |  horizon |   | keystone |                          |
+                +----------+   +----------+                          |
+                                                          Instances public access
+                             |                             with /28 network block
+                       HTTP API access                               |
+                             |                                       |
+                             +----------+----------------------------+
+                                        |
+                                    Internet
+</pre>
+                    </section>
+                    <section data-markdown>
+                        ## Go
+                        https://github.com/arnaudmorin/bootstrap-openstack
+                    </section>
+                </section>
+
+            </div>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                history: true,
+                slideNumber: 'c/t',
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: 'plugin/markdown/marked.js' },
+                    { src: 'plugin/markdown/markdown.js' },
+                    { src: 'plugin/notes/notes.js', async: true },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                ]
+            });
+        </script>
+    </body>
+</html>

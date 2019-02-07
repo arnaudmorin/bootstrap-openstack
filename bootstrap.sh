@@ -9,7 +9,11 @@ function create_keypair(){(
 
 function boot(){(
     NAME=$1
+    PUBLIC_NET=$2
     USERDATA=userdata/${NAME/-[0-9]*/}
+
+    echo ""
+    echo "Booting $NAME..."
 
     cp $USERDATA /tmp/userdata__$$
     sed -i -r "s/__OS_USERNAME__/$OS_USERNAME/" /tmp/userdata__$$
@@ -18,15 +22,23 @@ function boot(){(
     sed -i -r "s/__OS_TENANT_ID__/$OS_TENANT_ID/" /tmp/userdata__$$
     sed -i -r "s/__OS_REGION_NAME__/$OS_REGION_NAME/" /tmp/userdata__$$
 
-    openstack server create \
-        --key-name zob \
-        --nic net-id=Ext-Net \
-        --nic net-id=management \
-        --nic net-id=public \
-        --image 'Ubuntu 16.04' \
-        --flavor c2-7 \
-        --user-data /tmp/userdata__$$ \
-        $NAME
+    [ -n "$PUBLIC_NET" ] && EXTRA="--nic net-id=$PUBLIC_NET"
+
+    # Checking if instances does not already exists
+    ID=$(openstack server list --name $NAME -f value -c ID)
+
+    if [ -z "$ID" ] ; then
+        openstack server create \
+            --key-name zob \
+            --nic net-id=Ext-Net \
+            --nic net-id=management $EXTRA \
+            --image 'Ubuntu 16.04' \
+            --flavor c2-7 \
+            --user-data /tmp/userdata__$$ \
+            $NAME
+    else
+        echo "$NAME already exists with ID $ID, nothing to do."
+    fi
 )}
 
 create_keypair
@@ -36,6 +48,6 @@ boot mysql
 boot keystone
 boot nova
 boot glance
-boot neutron
 boot horizon
-boot compute-1
+boot neutron public
+boot compute-1 public
