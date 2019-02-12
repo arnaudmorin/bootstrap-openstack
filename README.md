@@ -183,10 +183,12 @@ $ openstack server list
 
 # Deploy
 ## Connect to deployer
-Now that your infrastructure is ready, you can start the configuration of OpenStack itself from the deployer machine.
+Now that your infrastructure is bootstrapped, you can start the configuration of OpenStack itself from the deployer machine.
+
+To do so, you will need to connect to the deployer with the SSH key (named _zob_) that was created during bootstraping:
 
 ```sh
-$ chmod 600 data/zob.key
+$ chmod 600 data/zob.key                    # Because permissions of the key were too loose when you cloned this repo.
 $ ssh -i data/zob.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
 ```
 
@@ -194,6 +196,19 @@ Now that you are inside the deployer, be root
 ```sh
 $ sudo su -
 ```
+
+## Cloud-init and postinstall
+
+Behind the scene, the bootstrapping created the instances with custom **cloud-init** scripts (from [userdata](userdata)). Those scripts are executed as postinstall inside the machine at boot time.
+
+As the execution of this postinstall can take some time (few minutes), if you are SSHing to your machine quite quickly, you can check the postinstall logs in live:
+
+```sh
+$ tailf /var/log/postinstall.log
+```
+
+The postinstall is finished when you can read _done_ at the end.
+
 
 ## Ansible
 ### Configure dynamic inventory file

@@ -121,6 +121,6 @@ EOF
 
 # ens3 is already set up by ubuntu
 ifup ens4
-ifup ens5
+#ifup ens5
 
 echo 'done'
