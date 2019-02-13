@@ -137,6 +137,7 @@ Example of creation of the public network from manager:
 
 To do that, you can run the script data/order_ip_block.py
 ```sh
+$ pip3 install -r requirements.txt
 $ python3 order_ip_block.py
 Please pay the BC 12345678 --> https://www.ovh.com/cgi-bin/order/displayOrder.cgi?orderId=12345678&orderPassword=ABCD
 Done
