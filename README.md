@@ -118,6 +118,7 @@ Example of creation of the management network from CLI:
 
 ```sh
 $ openstack network create management
+$ openstack network create public --provider-network-type=vrack --provider-segment=0
 $ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management 192.168.1.0/24
 ```
 
