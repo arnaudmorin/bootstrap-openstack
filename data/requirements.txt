@@ -1,0 +1,2 @@
+ovh==0.4.7
+configparser==3.7.1
