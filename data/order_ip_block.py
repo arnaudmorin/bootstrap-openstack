@@ -66,7 +66,7 @@ if not 'consumer_key' in config[config['default']['endpoint']]:
     validation = ck.request()
     print("Please visit %s to authenticate" % validation['validationUrl'])
     raw_input("and press Enter to continue...")
-    print "Welcome", client.get('/me')['firstname']
+    print("Welcome", client.get('/me')['firstname'])
     print("Btw, your 'consumerKey' is '%s'" % validation['consumerKey'])
     replace_in_file('ovh.conf', r"(;consumer_key=.*)", r"consumer_key=" + validation['consumerKey'])
 
