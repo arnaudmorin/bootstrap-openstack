@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
-import ovh
-import json
 import argparse
-
-
-# -*- encoding: utf-8 -*-
 import os
 import sys
 import re
@@ -48,9 +43,9 @@ def replace_in_file(filename, regex, replace):
 
 if not 'application_key' in config[config['default']['endpoint']]:
     print("Please visit https://eu.api.ovh.com/createApp/ to create an API key")
-    application_key = raw_input('Please enter your Application Key: ')
+    application_key = input('Please enter your Application Key: ')
     replace_in_file(my_ovh_config_file, r"(;application_key=.*)", r"application_key=" + application_key)
-    application_secret = raw_input('Please enter your Application Secret: ')
+    application_secret = input('Please enter your Application Secret: ')
     replace_in_file(my_ovh_config_file, r"(;application_secret=.*)", r"application_secret=" + application_secret)
 
 
@@ -65,7 +60,7 @@ if not 'consumer_key' in config[config['default']['endpoint']]:
     # Request token
     validation = ck.request()
     print("Please visit %s to authenticate" % validation['validationUrl'])
-    raw_input("and press Enter to continue...")
+    input("and press Enter to continue...")
     print("Welcome", client.get('/me')['firstname'])
     print("Btw, your 'consumerKey' is '%s'" % validation['consumerKey'])
     replace_in_file('ovh.conf', r"(;consumer_key=.*)", r"consumer_key=" + validation['consumerKey'])
