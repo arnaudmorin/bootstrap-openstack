@@ -18,7 +18,7 @@ apt -y install software-properties-common
 add-apt-repository -y cloud-archive:pike
 apt update
 apt -y purge cloud-init
-apt -y dist-upgrade
+DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade
 apt -y install python chrony lnav
 
 # Deployer will use this key (I named it zob) to connect to other machines
