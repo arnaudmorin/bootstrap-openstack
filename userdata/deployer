@@ -19,7 +19,7 @@ add-apt-repository -y cloud-archive:pike
 apt-add-repository -y ppa:ansible/ansible
 apt update
 apt -y purge cloud-init
-apt -y dist-upgrade
+DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade
 apt -y install python chrony lnav crudini ansible python-os-client-config python-shade git
 
 # Deployer will use this key (I named it zob) to connect to other machines
