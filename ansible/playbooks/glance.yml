@@ -6,13 +6,16 @@
   - import_tasks: common.yml
 
   - name: install glance
-    apt: name={{item}} state=latest
-    with_items:
-      - glance
-      - python-memcache
+    apt:
+      name: ['glance', 'python-memcache']
+      state: latest
 
   - name: configure glance api
-    ini_file: path=/etc/glance/glance-api.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/glance/glance-api.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "database", option: "connection", value: "mysql+pymysql://glance:{{password}}@mysql/glance" }
       - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
@@ -31,7 +34,11 @@
     notify:
       - restart glance-api
   - name: configure glance registry
-    ini_file: path=/etc/glance/glance-registry.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/glance/glance-registry.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "database", option: "connection", value: "mysql+pymysql://glance:{{password}}@mysql/glance" }
       - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }

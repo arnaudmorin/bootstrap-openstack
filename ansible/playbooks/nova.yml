@@ -6,16 +6,16 @@
   - import_tasks: common.yml
 
   - name: install nova
-    apt: name={{item}} state=latest
-    with_items:
-      - nova-api
-      - nova-conductor
-      - nova-consoleauth
-      - nova-novncproxy
-      - nova-scheduler
-      - nova-placement-api
+    apt:
+      name: ['nova-api', 'nova-conductor', 'nova-consoleauth', 'nova-novncproxy', 'nova-scheduler', 'nova-placement-api']
+      state: latest
+
   - name: configure nova
-    ini_file: path=/etc/nova/nova.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/nova/nova.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova" }
       - { section: "api_database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova_api" }

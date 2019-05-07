@@ -4,12 +4,16 @@
   - import_tasks: common.yml
 
   - name: install horizon
-    apt: name={{item}} state=latest
-    with_items:
-      - openstack-dashboard
+    apt:
+      name: ['openstack-dashboard']
+      state: latest
 
   - name: configure horizon
-    ini_file: path=/etc/openstack-dashboard/local_settings.py section= option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/openstack-dashboard/local_settings.py
+      section: ""
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { option: "OPENSTACK_HOST", value: "'{{hostvars['keystone']['ansible_host']}}'" }
       - { option: "OPENSTACK_KEYSTONE_URL", value: "\"http://%s:5000/v3\" % OPENSTACK_HOST" }

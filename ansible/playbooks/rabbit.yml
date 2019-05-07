@@ -13,7 +13,7 @@
     ignore_errors: True
   - name: create rabbitmq openstack user
     command: rabbitmqctl add_user openstack {{ password }}
-    when: user|failed
+    when: user is failed
   - name: configure rights
     command: rabbitmqctl set_permissions openstack ".*" ".*" ".*"
-    when: user|failed
+    when: user is failed

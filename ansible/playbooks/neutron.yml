@@ -6,16 +6,16 @@
   - import_tasks: common.yml
 
   - name: install neutron
-    apt: name={{item}} state=latest
-    with_items:
-      - neutron-server
-      - neutron-plugin-ml2
-      - neutron-linuxbridge-agent
-      - neutron-l3-agent
-      - neutron-dhcp-agent
-      - neutron-metadata-agent
+    apt:
+      name: ["neutron-server", "neutron-plugin-ml2", "neutron-linuxbridge-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent"]
+      state: latest
+
   - name: configure neutron
-    ini_file: path=/etc/neutron/neutron.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/neutron.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "database", option: "connection", value: "mysql+pymysql://neutron:{{password}}@mysql/neutron" }
       - { section: "DEFAULT", option: "core_plugin", value: "ml2" }
@@ -44,7 +44,11 @@
     notify:
       - restart neutron
   - name: configure neutron ml2
-    ini_file: path=/etc/neutron/plugins/ml2/ml2_conf.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/plugins/ml2/ml2_conf.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "ml2", option: "type_drivers", value: "flat,vlan,vxlan" }
       - { section: "ml2", option: "tenant_network_types", value: "vxlan" }
@@ -56,7 +60,11 @@
     notify:
       - restart neutron
   - name: configure neutron l2 agent
-    ini_file: path=/etc/neutron/plugins/ml2/linuxbridge_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens5" }
       - { section: "vxlan", option: "enable_vxlan", value: "true" }
@@ -67,13 +75,21 @@
     notify:
       - restart neutron
   - name: configure neutron l3 agent
-    ini_file: path=/etc/neutron/l3_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/l3_agent.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
     notify:
       - restart neutron
   - name: configure neutron dhcp agent
-    ini_file: path=/etc/neutron/dhcp_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/dhcp_agent.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
       - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
@@ -81,7 +97,11 @@
     notify:
       - restart neutron
   - name: configure neutron metadata agent
-    ini_file: path=/etc/neutron/metadata_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/metadata_agent.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "DEFAULT", option: "nova_metadata_host", value: "nova" }
       - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{password}}" }

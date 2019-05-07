@@ -6,13 +6,18 @@
   - import_tasks: common.yml
 
   - name: install packages
-    apt: name={{item}} state=latest
-    with_items:
-      - neutron-linuxbridge-agent
-      - nova-compute
+    apt:
+      name:
+        - neutron-linuxbridge-agent
+        - nova-compute
+      state: latest
 
   - name: configure nova
-    ini_file: path=/etc/nova/nova.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/nova/nova.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
       - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
@@ -61,7 +66,11 @@
       - restart nova
 
   - name: configure neutron
-    ini_file: path=/etc/neutron/neutron.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/neutron.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
       - { section: "DEFAULT", option: "auth_strategy", value: "keystone" }
@@ -75,7 +84,11 @@
       - { section: "keystone_authtoken", option: "username", value: "neutron" }
       - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
   - name: configure neutron l2 agent
-    ini_file: path=/etc/neutron/plugins/ml2/linuxbridge_agent.ini section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens5" }
       - { section: "vxlan", option: "enable_vxlan", value: "true" }
