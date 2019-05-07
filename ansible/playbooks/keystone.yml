@@ -6,10 +6,10 @@
   - import_tasks: common.yml
 
   - name: install memcached
-    apt: name={{item}} state=latest
-    with_items:
-      - memcached
-      - python-memcache
+    apt:
+      name: ['memcached','python-memcache']
+      state: latest
+
   - name: configure memcached
     lineinfile:
       path: /etc/memcached.conf
@@ -23,9 +23,15 @@
       state: started
 
   - name: install keystone
-    apt: name=keystone state=latest
+    apt:
+      name: keystone
+      state: latest
   - name: configure keystone
-    ini_file: path=/etc/keystone/keystone.conf section={{item.section}} option={{item.option}} value={{item.value}}
+    ini_file:
+      path: /etc/keystone/keystone.conf
+      section: "{{item.section}}"
+      option: "{{item.option}}"
+      value: "{{item.value}}"
     with_items:
       - { section: "database", option: "connection", value: "mysql+pymysql://keystone:{{password}}@mysql/keystone" }
       - { section: "token", option: "provider", value: "fernet" }
@@ -56,7 +62,13 @@
       state: started
 
   - name: install openstack client
-    apt: name=python-openstackclient state=latest
+    apt:
+      name: python-openstackclient
+      state: latest
+  - name: install openstack designate client
+    apt:
+      name: python-designateclient
+      state: latest
   - name: install openstack client bash completion
     shell: |
       openstack complete > /etc/bash_completion.d/openstack
@@ -75,7 +87,9 @@
       dest: /root/openrc_admin
 
   - name: copy helper script
-    copy: src=keystone/helper dest=/root/helper
+    copy:
+      src: keystone/helper
+      dest: /root/helper
 
   - name: create project service
     shell: |
@@ -104,6 +118,7 @@
       - neutron
       - placement
       - glance
+      - designate
   - name: add admin role to users for service project
     shell: |
       source /root/openrc_admin
@@ -120,6 +135,7 @@
       - neutron
       - placement
       - glance
+      - designate
   - name: create services
     shell: |
       source /root/openrc_admin
@@ -135,6 +151,7 @@
       - network
       - placement
       - image
+      - dns
   - name: create services endpoints for nova
     shell: |
       source /root/openrc_admin
@@ -187,6 +204,21 @@
     args:
       executable: /bin/bash
       creates: /root/.ansible_endpoint_neutron_{{item}}
+    with_items:
+      - public
+      - admin
+      - internal
+
+  - name: create services endpoints for designate
+    shell: |
+      source /root/openrc_admin
+      openstack endpoint create \
+        --region RegionOne \
+        dns {{item}} http://{{hostvars['designate']['public_ip']}}:9001
+      [ $? -eq 0 ] && touch /root/.ansible_endpoint_designate_{{item}}
+    args:
+      executable: /bin/bash
+      creates: /root/.ansible_endpoint_designate_{{item}}
     with_items:
       - public
       - admin

@@ -14,12 +14,10 @@
       repo: deb [arch=amd64,arm64,i386,ppc64el] http://mariadb.mirrors.ovh.net/MariaDB/repo/10.1/ubuntu xenial main
       state: present
   - name: install mysql
-    apt: name={{item}} state=latest update_cache=yes
-    with_items:
-      - mariadb-server
-      - python-pymysql
-      - python-mysqldb
-      - mycli
+    apt:
+      name: ['mariadb-server', 'python-pymysql', 'python-mysqldb', 'mycli']
+      state: latest
+      update_cache: yes
   - name: configure mysql
     copy: src=mysql/99-openstack.cnf dest=/etc/mysql/conf.d/99-openstack.cnf
     notify:
@@ -33,6 +31,8 @@
       - nova_cell0
       - neutron
       - glance
+      - designate
+      - designate_pm
   - name: create users
     mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present host=%
     with_items:
@@ -40,6 +40,7 @@
       - nova
       - neutron
       - glance
+      - designate
   - name: ensure mysql is running
     service:
       name: mysql
