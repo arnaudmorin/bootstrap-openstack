@@ -32,6 +32,7 @@
          * [horizon](#horizon)
          * [compute](#compute)
          * [nova](#nova-1)
+         * [designate](#designate)
          * [All in one shot](#all-in-one-shot)
    * [Configure](#configure)
       * [Keystone](#keystone-1)
@@ -62,9 +63,9 @@ you     +----------->  | deployer |
 |  mysql   |   |  glance  |   |  compute | <-----> | k |
 +----------+   +----------+   +----------+         +---+
                                                      |
-+----------+   +----------+                          |
-|  horizon |   | keystone |                          |
-+----------+   +----------+                          |
++----------+   +----------+   +----------+           |
+|  horizon |   | keystone |   | designate|           |
++----------+   +----------+   +----------+           |
                                           Instances public access
              |                             with /28 network block
        HTTP API access                               |
@@ -171,7 +172,7 @@ $ source openrc.sh
 $ ./bootstrap.sh
 ```
 
-This will create 9 instances, connected to an external network (Ext-Net) and two vRack networks (public and management).
+This will create 10 instances, connected to an external network (Ext-Net) and two vRack networks (public and management).
 
 Each instance is going to be dedicated to one of the core OpenStack services (see architecture).
 
@@ -228,6 +229,7 @@ should return something ending like:
 ```
 ...
   "ovh": [
+    "designate",
     "horizon",
     "mysql",
     "compute-1",
@@ -295,7 +297,7 @@ $ ansible-playbook /etc/ansible/playbooks/horizon.yml
 ```
 
 ### compute
-And finally, compute
+Then, compute
 ```sh
 $ ansible-playbook /etc/ansible/playbooks/compute.yml
 ```
@@ -306,10 +308,16 @@ Then nova again, to register the compute in nova cell
 $ ansible-playbook /etc/ansible/playbooks/nova.yml
 ```
 
+### designate
+And finally, designate
+```sh
+$ ansible-playbook /etc/ansible/playbooks/designate.yml
+```
+
 ### All in one shot
 Or if you want to perform all in one shot:
 ```sh
-$ for s in deployer rabbit mysql keystone glance nova neutron horizon compute nova ; do ansible-playbook /etc/ansible/playbooks/$s.yml ; done
+$ for s in deployer rabbit mysql keystone glance nova neutron horizon compute nova designate ; do ansible-playbook /etc/ansible/playbooks/$s.yml ; done
 ```
 
 # Configure
