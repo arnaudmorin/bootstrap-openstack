@@ -98,6 +98,9 @@ ansible:
   fail_on_errors: True
 EOF
 
+# Export inventory file
+/etc/ansible/dynhosts --list
+
 # Configure network
 # ens3 --> Ext-Net interface. Mostly used to access API over regular internet connection
 # ens4 --> management interface. Mostly used by some OpenStack services to communicate
