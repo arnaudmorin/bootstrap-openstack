@@ -1,0 +1,55 @@
+---
+- name: Install deployer
+  hosts: deployer
+  roles:
+  - {role: 'deployer', tags: 'deployer'}
+
+- name: Install rabbit
+  hosts: rabbit
+  roles:
+  - {role: 'rabbit', tags: 'rabbit'}
+
+- name: Install mysql
+  hosts: mysql
+  roles:
+  - {role: 'mysql', tags: 'mysql'}
+
+- name: Install keystone
+  hosts: keystone
+  roles:
+  - {role: 'keystone', tags: 'keystone'}
+
+- name: Install glance
+  hosts: glance
+  roles:
+  - {role: 'glance', tags: 'glance'}
+
+- name: Install nova
+  hosts: nova
+  roles:
+  - {role: 'nova', tags: 'nova'}
+
+- name: Install neutron
+  hosts: neutron
+  roles:
+  - {role: 'neutron', tags: 'neutron'}
+
+- name: Install horizon
+  hosts: horizon
+  roles:
+  - {role: 'horizon', tags: 'horizon'}
+
+- name: Install compute
+  hosts: compute-*
+  roles:
+  - {role: 'compute', tags: 'compute'}
+
+- name: Install nova
+  hosts: nova
+  roles:
+  - {role: 'nova', tags: 'nova'}
+
+- name: Install designate
+  hosts: designate
+  roles:
+  - {role: 'designate', tags: 'designate'}

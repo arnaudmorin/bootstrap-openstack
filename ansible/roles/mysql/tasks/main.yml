@@ -1,0 +1,47 @@
+---
+- name: import generic tasks
+  import_tasks: common.yml
+
+- name: include vars
+  include_vars: vars/vars.yml
+
+- name: add apt key for mariadb
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: f1656f24c74cd1d8
+- name: add apt repository for mariadb
+  apt_repository:
+    repo: deb [arch=amd64,arm64,i386,ppc64el] http://mariadb.mirrors.ovh.net/MariaDB/repo/10.1/ubuntu xenial main
+    state: present
+- name: install mysql
+  apt:
+    name: ['mariadb-server', 'python-pymysql', 'python-mysqldb', 'mycli']
+    state: latest
+    update_cache: yes
+- name: configure mysql
+  copy: src=./config/99-openstack.cnf dest=/etc/mysql/conf.d/99-openstack.cnf
+  notify:
+    - restart mysql
+- name: create databases
+  mysql_db: name={{item}} state=present
+  with_items:
+    - keystone
+    - nova
+    - nova_api
+    - nova_cell0
+    - neutron
+    - glance
+    - designate
+    - designate_pm
+- name: create users
+  mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present host=%
+  with_items:
+    - keystone
+    - nova
+    - neutron
+    - glance
+    - designate
+- name: ensure mysql is running
+  service:
+    name: mysql
+    state: started
