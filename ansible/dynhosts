@@ -189,13 +189,15 @@ def main():
             output = to_json(inventory.get_host(args.host))
         print(output)
 
-        # Write inventory file in /etc/ansible/hosts
-        with open("/etc/ansible/hosts", "w+") as hostfile:
-            hostfile.write('#!/usr/bin/env python\n\n')
-            hostfile.write('print ("""')
+        # Write hostvars in /usr/share/ansible/plugins/vars/openstack.json
+        vars_path = ['usr', 'share', 'ansible', 'plugins', 'vars']
+        for i in range(len(vars_path)):
+            path = '/' + '/'.join(vars_path[:i+1])
+            if not os.path.exists(path):
+                os.mkdir(path)
+
+        with open("/usr/share/ansible/plugins/vars/bootstrap-openstack.json", "w+") as hostfile:
             hostfile.write(output)
-            hostfile.write('""")')
-        os.chmod("/etc/ansible/hosts", 755)
 
     except shade.OpenStackCloudException as e:
         sys.stderr.write('%s\n' % e.message)
