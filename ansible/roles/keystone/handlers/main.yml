@@ -1,0 +1,8 @@
+- name: restart memcached
+  service:
+    name: memcached
+    state: restarted
+- name: restart apache2
+  service:
+    name: apache2
+    state: restarted

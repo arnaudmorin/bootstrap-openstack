@@ -188,6 +188,15 @@ def main():
         elif args.host:
             output = to_json(inventory.get_host(args.host))
         print(output)
+
+        # Write inventory file in /etc/ansible/hosts
+        with open("/etc/ansible/hosts", "w+") as hostfile:
+            hostfile.write('#!/usr/bin/env python\n\n')
+            hostfile.write('print ("""')
+            hostfile.write(output)
+            hostfile.write('""")')
+        os.chmod("/etc/ansible/hosts", 755)
+
     except shade.OpenStackCloudException as e:
         sys.stderr.write('%s\n' % e.message)
         sys.exit(1)

@@ -1,0 +1,109 @@
+---
+- name: import generic tasks
+  import_tasks: common.yml
+
+- name: include vars
+  include_vars: vars/vars.yml
+
+- name: install designate and bind
+  apt:
+    name: ['designate', 'bind9', 'bind9utils', 'bind9-doc', 'designate-mdns', 'designate-producer', 'designate-worker']
+    state: latest
+
+- name: Check that the file /etc/designate/rndc.key exists
+  stat:
+    path: /etc/designate/rndc.key
+  register: stat_result
+
+- name: Create the file, if it doesnt exist already
+  raw: rndc-confgen -a -k designate -c /etc/designate/rndc.key
+  when: stat_result.stat.exists == False
+
+- name: Copy file from /etc/designate/rndc.key to /etc/bind/rndc.key
+  when: stat_result.stat.exists == False
+  copy:
+    remote_src: true
+    src: /etc/designate/rndc.key
+    dest: /etc/bind/rndc.key
+    owner: bind
+    group: bind
+    mode: 0600
+
+- name: Copy bind config file named.conf.options
+  template:
+    src: ./config/named.conf.options
+    dest: /etc/bind/named.conf.options
+    owner: root
+    group: bind
+    mode: 0644
+  notify:
+    - restart bind
+
+- name: configure designate
+  ini_file:
+    path: /etc/designate/designate.conf
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: "DEFAULT", option: "verbose", value: "True"}
+    - { section: "DEFAULT", option: "debug", value: "True"}
+    - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
+    - { section: "DEFAULT", option: "auth_strategy", value: "keystone" }
+    - { section: "service:central", option: "workers", value: "1" }
+    - { section: "service:central", option: "default_pool_id", value: "'794ccc2c-d751-44fe-b57f-8894c9f5c842'" }
+    - { section: "service:api", option: "api_host", value: "{{hostvars['designate']['public_ip']}}" }
+    - { section: "service:api", option: "api_port", value: "9001" }
+    - { section: "service:api", option: "auth_strategy", value: "keystone" }
+    - { section: "service:api", option: "enable_api_v1", value: "False" }
+    - { section: "service:api", option: "enable_api_v2", value: "True" }
+    - { section: "service:api", option: "enabled_extensions_v2", value: "quotas, reports" }
+    - { section: "service:api", option: "api_base_uri", value: "http://{{hostvars['designate']['public_ip']}}:9001/" }
+    - { section: "service:api", option: "workers", value: "1" }
+    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
+    - { section: "keystone_authtoken", option: "auth_type", value: "password" }
+    - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "user_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "project_name", value: "service" }
+    - { section: "keystone_authtoken", option: "username", value: "designate" }
+    - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "admin_tenant_name", value: "service" }
+    - { section: "service:pool_manager", option: "workers", value: "1"}
+    - { section: "service:pool_manager", option: "pool_id", value: "'794ccc2c-d751-44fe-b57f-8894c9f5c842'"}
+    - { section: "service:worker", option: "enabled", value: "True"}
+    - { section: "service:worker", option: "workers", value: "1"}
+    - { section: "pool_manager_cache:sqlalchemy", option: "connection", value: "mysql+pymysql://designate:{{password}}@mysql/designate_pm"}
+    - { section: "storage:sqlalchemy", option: "connection", value: "mysql+pymysql://designate:{{password}}@mysql/designate"}
+
+- name: Restarting designate
+  service:
+    name: "{{item}}"
+    state: restarted
+  with_items:
+    - "designate-api"
+    - "designate-central"
+    - "designate-mdns"
+    - "designate-producer"
+    - "designate-worker"
+
+- name: initiate designate database
+  shell: su -s /bin/sh -c "designate-manage database sync" designate && touch /root/.ansible_initiate_designate_db
+  args:
+    creates: /root/.ansible_initiate_designate_db
+  notify:
+    - restart designate
+
+- name: Copy designate config file pools.yaml
+  template:
+    src: ./config/pools.yaml
+    dest: /etc/designate/pools.yaml
+    owner: root
+    group: root
+    mode: 0644
+
+- name: initiate designate_pm database
+  shell: su -s /bin/sh -c "designate-manage pool update" designate && touch /root/.ansible_initiate_designatepm_db
+  args:
+    creates: /root/.ansible_initiate_designatepm_db

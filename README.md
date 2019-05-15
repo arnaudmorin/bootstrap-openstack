@@ -32,6 +32,7 @@
          * [horizon](#horizon)
          * [compute](#compute)
          * [nova](#nova-1)
+         * [designate](#designate)
          * [All in one shot](#all-in-one-shot)
    * [Configure](#configure)
       * [Keystone](#keystone-1)
@@ -62,9 +63,9 @@ you     +----------->  | deployer |
 |  mysql   |   |  glance  |   |  compute | <-----> | k |
 +----------+   +----------+   +----------+         +---+
                                                      |
-+----------+   +----------+                          |
-|  horizon |   | keystone |                          |
-+----------+   +----------+                          |
++----------+   +----------+   +----------+           |
+|  horizon |   | keystone |   | designate|           |
++----------+   +----------+   +----------+           |
                                           Instances public access
              |                             with /28 network block
        HTTP API access                               |
@@ -171,7 +172,7 @@ $ source openrc.sh
 $ ./bootstrap.sh
 ```
 
-This will create 9 instances, connected to an external network (Ext-Net) and two vRack networks (public and management).
+This will create 10 instances, connected to an external network (Ext-Net) and two vRack networks (public and management).
 
 Each instance is going to be dedicated to one of the core OpenStack services (see architecture).
 
@@ -228,6 +229,7 @@ should return something ending like:
 ```
 ...
   "ovh": [
+    "designate",
     "horizon",
     "mysql",
     "compute-1",
@@ -244,25 +246,25 @@ should return something ending like:
 ### deployer
 Run ansible on deployer itself, so it can learn the different IP addresses of your infrastructure.
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/deployer.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags deployer
 ```
 
 ### rabbit
 Continue with rabbit
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/rabbit.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags rabbit
 ```
 
 ### mysql
 Then mysql
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/mysql.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags mysql
 ```
 
 ### keystone
 Then keystone
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/keystone.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags keystone
 ```
 
 ### glance
@@ -273,43 +275,49 @@ To do so, you can read the documentation here: https://docs.openstack.org/glance
 Or, if you are eager to get to the end of this boostraping, you can use:
 
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/glance.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags glance
 ```
 
 ### nova
 Then nova
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/nova.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags nova
 ```
 
 ### neutron
 Then neutron
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/neutron.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags neutron
 ```
 
 ### horizon
 Then horizon
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/horizon.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags horizon
 ```
 
 ### compute
-And finally, compute
+Then, compute
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/compute.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags compute
 ```
 
 ### nova
 Then nova again, to register the compute in nova cell
 ```sh
-$ ansible-playbook /etc/ansible/playbooks/nova.yml
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags nova
+```
+
+### designate
+And finally, designate
+```sh
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags designate
 ```
 
 ### All in one shot
 Or if you want to perform all in one shot:
 ```sh
-$ for s in deployer rabbit mysql keystone glance nova neutron horizon compute nova ; do ansible-playbook /etc/ansible/playbooks/$s.yml ; done
+$ ansible-playbook /etc/ansible/deploy_openstack.yml
 ```
 
 # Configure

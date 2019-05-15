@@ -1,0 +1,14 @@
+- name: restart bind
+  service:
+    name: "bind9"
+    state: restarted
+- name: restart designate
+  service:
+    name: "{{item}}"
+    state: restarted
+  with_items:
+    - "designate-api"
+    - "designate-central"
+    - "designate-mdns"
+    - "designate-producer"
+    - "designate-worker"
