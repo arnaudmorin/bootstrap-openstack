@@ -120,8 +120,8 @@ Example of creation of the management network from CLI:
 ```sh
 $ openstack network create management
 $ openstack network create public --provider-network-type=vrack --provider-segment=0
-$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management --dns-nameserver 213.186.33.99 192.168.1.0/24
-$ openstack subnet create --no-dhcp --gateway none --subnet-range 192.168.1.0/24 --network public --dns-nameserver 213.186.33.99 192.168.1.0/24
+$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management --dns-nameserver 0.0.0.0 192.168.1.0/24
+$ openstack subnet create --no-dhcp --gateway none --subnet-range 192.168.1.0/24 --network public --dns-nameserver 0.0.0.0 192.168.1.0/24
 ```
 
 Example of creation of the public network from manager:
