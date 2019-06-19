@@ -120,8 +120,8 @@ Example of creation of the management network from CLI:
 ```sh
 $ openstack network create management
 $ openstack network create public --provider-network-type=vrack --provider-segment=0
-$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management 192.168.1.0/24
-$ openstack subnet create --no-dhcp --gateway none --subnet-range 192.168.1.0/24 --network public 192.168.1.0/24
+$ openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management --dns-nameserver 0.0.0.0 192.168.1.0/24
+$ openstack subnet create --no-dhcp --gateway none --subnet-range 192.168.1.0/24 --network public --dns-nameserver 0.0.0.0 192.168.1.0/24
 ```
 
 Example of creation of the public network from manager:
@@ -220,9 +220,9 @@ Ansible is using a dynamic inventory file that will ask openstack all instances 
 A config file should already be configured in /etc/ansible/openstack.yml
 You can check its content and update if necessary
 
-### Check that the dynamic inventory works
+### Generate dynamic inventory
 ```sh
-$ /etc/ansible/hosts --list
+$ /etc/ansible/dynhosts --list
 ```
 
 should return something ending like:
