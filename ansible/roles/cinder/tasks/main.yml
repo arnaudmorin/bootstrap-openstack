@@ -1,0 +1,40 @@
+---
+- name: import generic tasks
+  import_tasks: common.yml
+
+- name: include vars
+  include_vars: vars/vars.yml
+
+- name: install cinder
+  apt:
+    name: ['cinder-api', 'cinder-scheduler', 'cinder-volume', 'python-memcache']
+    state: latest
+
+- name: configure cinder api
+  ini_file:
+    path: /etc/cinder/cinder.conf
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: "database", option: "connection", value: "mysql+pymysql://cinder:{{password}}@mysql/cinder" }
+    - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
+    - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
+    - { section: "DEFAULT", option: "glance_api_servers", value: "http://glance:9292" }
+    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
+    - { section: "keystone_authtoken", option: "auth_type", value: "password" }
+    - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "user_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "project_name", value: "service" }
+    - { section: "keystone_authtoken", option: "username", value: "nova" }
+    - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/cinder/tmp" }
+  notify:
+    - restart cinder
+
+- name: initiate cinder database
+  shell: su -s /bin/sh -c "cinder-manage db sync" cinder && touch /root/.ansible_initiate_cinder_db
+  args:
+    creates: /root/.ansible_initiate_cinder_db

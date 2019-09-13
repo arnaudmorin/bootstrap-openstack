@@ -118,6 +118,7 @@
     - neutron
     - placement
     - glance
+    - cinder
     - designate
 - name: add admin role to users for service project
   shell: |
@@ -135,6 +136,7 @@
     - neutron
     - placement
     - glance
+    - cinder
     - designate
 - name: create services
   shell: |
@@ -152,6 +154,8 @@
     - placement
     - image
     - dns
+    - volumev2
+    - volumev3
 - name: create services endpoints for nova
   shell: |
     source /root/openrc_admin
@@ -190,6 +194,34 @@
   args:
     executable: /bin/bash
     creates: /root/.ansible_endpoint_glance_{{item}}
+  with_items:
+    - public
+    - admin
+    - internal
+- name: create services endpoints for cinder - volumev2
+  shell: |
+    source /root/openrc_admin
+    openstack endpoint create \
+      --region RegionOne \
+      volumev2 {{item}} http://{{hostvars['cinder']['public_ip']}}:8776/v2/%\(project_id\)s
+    [ $? -eq 0 ] && touch /root/.ansible_endpoint_cinder_{{item}}_v2
+  args:
+    executable: /bin/bash
+    creates: /root/.ansible_endpoint_cinder_{{item}}_v2
+  with_items:
+    - public
+    - admin
+    - internal
+- name: create services endpoints for cinder - volumev3
+  shell: |
+    source /root/openrc_admin
+    openstack endpoint create \
+      --region RegionOne \
+      volumev3 {{item}} http://{{hostvars['cinder']['public_ip']}}:8776/v2/%\(project_id\)s
+    [ $? -eq 0 ] && touch /root/.ansible_endpoint_cinder_{{item}}_v3
+  args:
+    executable: /bin/bash
+    creates: /root/.ansible_endpoint_cinder_{{item}}_v3
   with_items:
     - public
     - admin

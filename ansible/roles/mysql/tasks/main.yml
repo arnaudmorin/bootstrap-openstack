@@ -31,6 +31,7 @@
     - nova_cell0
     - neutron
     - glance
+    - cinder
     - designate
     - designate_pm
 - name: create users
@@ -40,6 +41,7 @@
     - nova
     - neutron
     - glance
+    - cinder
     - designate
 - name: ensure mysql is running
   service:

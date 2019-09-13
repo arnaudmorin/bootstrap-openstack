@@ -24,6 +24,11 @@
   roles:
   - {role: 'glance', tags: 'glance'}
 
+- name: Install cinder
+  hosts: cinder
+  roles:
+  - {role: 'cinder', tags: 'cinder'}
+
 - name: Install nova
   hosts: nova
   roles:
