@@ -12,11 +12,6 @@ from pprint import pprint
 
 config = configparser.ConfigParser()
 
-if len(sys.argv) > 1:
-    my_ovh_config_file = sys.argv[1]
-else:
-    my_ovh_config_file = 'ovh.conf'
-
 # Parse args
 parser = argparse.ArgumentParser()
 parser.add_argument("--conf-file",
@@ -31,16 +26,15 @@ parser.add_argument("--country",
 args = parser.parse_args()
 
 
-config.read(args.conf_file)
-
-
-# create a client using configuration
-client = ovh.Client(config_file=args.conf_file)
-
-
-
-
 # Functions
+def replace_in_file(filename, regex, replace):
+    with open (filename, 'r' ) as f:
+        content = f.read()
+    content_new = re.sub(regex, replace, content, flags = re.M)
+
+    with open("ovh.conf",'w') as w:
+        w.write(content_new)
+
 def print_json(_json):
     print(
         json.dumps(
@@ -52,13 +46,33 @@ def print_json(_json):
     )
 
 
+# Read config
+config.read(args.conf_file)
 
-
+# Check config file
+if not 'application_key' in config[config['default']['endpoint']]:
+    print("Please visit https://eu.api.ovh.com/createApp/ to create an API key")
+    application_key = input('Please enter your Application Key: ')
+    replace_in_file(args.conf_file, r"(;application_key=.*)", r"application_key=" + application_key)
+    application_secret = input('Please enter your Application Secret: ')
+    replace_in_file(args.conf_file, r"(;application_secret=.*)", r"application_secret=" + application_secret)
 
 # Create a client
 # It will read config from env vars.
 # See https://github.com/ovh/python-ovh#configuration
+client = ovh.Client(config_file=args.conf_file)
 
+# Request consumer_key is needed
+if not 'consumer_key' in config[config['default']['endpoint']]:
+    ck = client.new_consumer_key_request()
+    ck.add_rules(ovh.API_READ_WRITE, "/*")
+    # Request token
+    validation = ck.request()
+    print("Please visit %s to authenticate" % validation['validationUrl'])
+    input("and press Enter to continue...")
+    print("Welcome", client.get('/me')['firstname'])
+    print("Btw, your 'consumerKey' is '%s'" % validation['consumerKey'])
+    replace_in_file(args.conf_file, r"(;consumer_key=.*)", r"consumer_key=" + validation['consumerKey'])
 
 # Create cart
 cart = client.post(
