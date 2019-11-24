@@ -13,13 +13,14 @@ function log_handler {
 exec &> >(log_handler)
 
 # Update packages
+export DEBIAN_FRONTEND=noninteractive
 apt update
 apt -y install software-properties-common
-add-apt-repository -y cloud-archive:pike
+add-apt-repository -y cloud-archive:stein
 apt update
 apt -y purge cloud-init
-DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade
-apt -y install python chrony lnav
+apt -y dist-upgrade
+apt -y install python chrony lnav ifupdown
 
 # Deployer will use this key (I named it zob) to connect to other machines
 # Note: this is not very secure to use this key because:

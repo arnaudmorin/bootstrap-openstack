@@ -270,7 +270,7 @@ $ ansible-playbook /etc/ansible/deploy_openstack.yml --tags keystone
 ### glance
 Glance is one of the easiest service to install, so try to install it by your own.
 
-To do so, you can read the documentation here: https://docs.openstack.org/glance/pike/install/index.html
+To do so, you can read the documentation here: https://docs.openstack.org/glance/stein/install/index.html
 
 Or, if you are eager to get to the end of this boostraping, you can use:
 

@@ -13,14 +13,15 @@ function log_handler {
 exec &> >(log_handler)
 
 # Update packages
+export DEBIAN_FRONTEND=noninteractive
 apt update
 apt -y install software-properties-common
-add-apt-repository -y cloud-archive:pike
+add-apt-repository -y cloud-archive:stein
 apt-add-repository -y ppa:ansible/ansible
 apt update
 apt -y purge cloud-init
-DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade
-apt -y install python chrony lnav crudini ansible python-os-client-config python-shade git
+apt -y dist-upgrade
+apt -y install python chrony lnav crudini ansible python-os-client-config python-shade git ifupdown
 
 # Deployer will use this key (I named it zob) to connect to other machines
 # Note: this is not very secure to use this key because:
@@ -124,6 +125,5 @@ EOF
 
 # ens3 is already set up by ubuntu
 ifup ens4
-#ifup ens5
 
 echo 'done'
