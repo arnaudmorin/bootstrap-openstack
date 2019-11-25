@@ -47,6 +47,7 @@ boot rabbit
 boot mysql
 boot keystone
 boot nova
+boot placement
 boot glance
 boot horizon
 boot neutron public
