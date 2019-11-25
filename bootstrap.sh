@@ -49,6 +49,7 @@ boot keystone
 boot nova
 boot placement
 boot glance
+boot cinder
 boot horizon
 boot neutron public
 boot compute-1 public
