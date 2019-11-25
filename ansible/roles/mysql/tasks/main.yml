@@ -23,7 +23,7 @@
   notify:
     - restart mysql
 - name: create databases
-  mysql_db: name={{item}} state=present
+  mysql_db: name={{item}} state=present login_unix_socket=/var/run/mysqld/mysqld.sock
   with_items:
     - keystone
     - nova
@@ -36,7 +36,7 @@
     - designate
     - designate_pm
 - name: create users
-  mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present host=%
+  mysql_user: name={{item}} password={{password}} priv=*.*:ALL state=present host=% login_unix_socket=/var/run/mysqld/mysqld.sock
   with_items:
     - keystone
     - nova
