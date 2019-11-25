@@ -28,6 +28,7 @@
          * [keystone](#keystone)
          * [glance](#glance)
          * [nova](#nova)
+         * [placement](#placement)
          * [neutron](#neutron)
          * [horizon](#horizon)
          * [compute](#compute)
@@ -284,6 +285,12 @@ Then nova
 $ ansible-playbook /etc/ansible/deploy_openstack.yml --tags nova
 ```
 
+### placement
+Then placement
+```sh
+$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags placement
+```
+
 ### neutron
 Then neutron
 ```sh
@@ -297,15 +304,9 @@ $ ansible-playbook /etc/ansible/deploy_openstack.yml --tags horizon
 ```
 
 ### compute
-Then, compute
+Then, compute (it will also trigger nova again to let it knows about the compute)
 ```sh
 $ ansible-playbook /etc/ansible/deploy_openstack.yml --tags compute
-```
-
-### nova
-Then nova again, to register the compute in nova cell
-```sh
-$ ansible-playbook /etc/ansible/deploy_openstack.yml --tags nova
 ```
 
 ### designate

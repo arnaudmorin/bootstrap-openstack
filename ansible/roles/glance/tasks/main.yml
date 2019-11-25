@@ -18,8 +18,8 @@
     value: "{{item.value}}"
   with_items:
     - { section: "database", option: "connection", value: "mysql+pymysql://glance:{{password}}@mysql/glance" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }

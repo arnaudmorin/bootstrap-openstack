@@ -1,0 +1,6 @@
+- name: restart apache2
+  service:
+    name: "{{item}}"
+    state: restarted
+  with_items:
+    - "apache2"

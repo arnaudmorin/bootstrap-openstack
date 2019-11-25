@@ -25,13 +25,13 @@
     - { section: "DEFAULT", option: "firewall_driver", value: "nova.virt.firewall.NoopFirewallDriver" }
     - { section: "api", option: "auth_strategy", value: "keystone" }
     - { section: "vnc", option: "enabled", value: "True" }
-    - { section: "vnc", option: "vncserver_listen", value: "0.0.0.0" }
-    - { section: "vnc", option: "vncserver_proxyclient_address", value: "$my_ip" }
+    - { section: "vnc", option: "server_listen", value: "0.0.0.0" }
+    - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }
     - { section: "vnc", option: "novncproxy_base_url", value: "http://{{hostvars['nova']['public_ip']}}:6080/vnc_auto.html" }
     - { section: "glance", option: "api_servers", value: "http://glance:9292" }
     - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
@@ -44,11 +44,11 @@
     - { section: "placement", option: "project_name", value: "service" }
     - { section: "placement", option: "auth_type", value: "password" }
     - { section: "placement", option: "user_domain_name", value: "Default" }
-    - { section: "placement", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "placement", option: "auth_url", value: "http://keystone:5000" }
     - { section: "placement", option: "username", value: "placement" }
     - { section: "placement", option: "password", value: "{{password}}" }
     - { section: "neutron", option: "url", value: "http://neutron:9696" }
-    - { section: "neutron", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "neutron", option: "auth_url", value: "http://keystone:5000" }
     - { section: "neutron", option: "auth_type", value: "password" }
     - { section: "neutron", option: "project_domain_name", value: "Default" }
     - { section: "neutron", option: "user_domain_name", value: "Default" }
@@ -74,8 +74,9 @@
   with_items:
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "auth_strategy", value: "keystone" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/neutron/tmp" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
@@ -83,6 +84,8 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "neutron" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+  notify:
+    - restart neutron
 - name: configure neutron l2 agent
   ini_file:
     path: /etc/neutron/plugins/ml2/linuxbridge_agent.ini

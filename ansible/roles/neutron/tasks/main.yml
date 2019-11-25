@@ -24,8 +24,9 @@
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "notify_nova_on_port_status_changes", value: "true" }
     - { section: "DEFAULT", option: "notify_nova_on_port_data_changes", value: "true" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/neutron/tmp" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
@@ -33,7 +34,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
-    - { section: "nova", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "nova", option: "auth_url", value: "http://keystone:5000" }
     - { section: "nova", option: "auth_type", value: "password" }
     - { section: "nova", option: "project_domain_name", value: "Default" }
     - { section: "nova", option: "user_domain_name", value: "Default" }

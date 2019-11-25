@@ -49,7 +49,7 @@
 - name: initiate keystone
   shell: |
     keystone-manage bootstrap --bootstrap-password {{password}} \
-      --bootstrap-admin-url http://{{hostvars['keystone']['public_ip']}}:35357/v3/ \
+      --bootstrap-admin-url http://{{hostvars['keystone']['public_ip']}}:5000/v3/ \
       --bootstrap-internal-url http://{{hostvars['keystone']['public_ip']}}:5000/v3/ \
       --bootstrap-public-url http://{{hostvars['keystone']['public_ip']}}:5000/v3/ \
       --bootstrap-region-id RegionOne && \
@@ -179,7 +179,7 @@
     source /root/openrc_admin
     openstack endpoint create \
       --region RegionOne \
-      placement {{item}} http://{{hostvars['nova']['public_ip']}}:8778
+      placement {{item}} http://{{hostvars['placement']['public_ip']}}:8778
     [ $? -eq 0 ] && touch /root/.ansible_endpoint_placement_{{item}}
   args:
     executable: /bin/bash

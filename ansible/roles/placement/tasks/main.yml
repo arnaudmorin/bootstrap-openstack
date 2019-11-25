@@ -1,0 +1,36 @@
+---
+- name: import generic tasks
+  import_tasks: common.yml
+
+- name: include vars
+  include_vars: vars/vars.yml
+
+- name: install placement
+  apt:
+    name: ['placement-api', 'python3-pymysql']
+    state: latest
+
+- name: configure placement
+  ini_file:
+    path: /etc/placement/placement.conf
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: "placement_database", option: "connection", value: "mysql+pymysql://placement:{{password}}@mysql/placement" }
+    - { section: "api", option: "auth_strategy", value: "keystone" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000/v3" }
+    - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
+    - { section: "keystone_authtoken", option: "auth_type", value: "password" }
+    - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "user_domain_name", value: "Default" }
+    - { section: "keystone_authtoken", option: "project_name", value: "service" }
+    - { section: "keystone_authtoken", option: "username", value: "placement" }
+    - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+  notify:
+    - restart apache2
+
+- name: initiate placement database
+  shell: su -s /bin/sh -c "placement-manage db sync" placement && touch /root/.ansible_initiate_placement_db
+  args:
+    creates: /root/.ansible_initiate_placement_db

@@ -34,6 +34,11 @@
   roles:
   - {role: 'nova', tags: 'nova'}
 
+- name: Install placement
+  hosts: placement
+  roles:
+  - {role: 'placement', tags: 'placement'}
+
 - name: Install neutron
   hosts: neutron
   roles:
@@ -49,10 +54,11 @@
   roles:
   - {role: 'compute', tags: 'compute'}
 
+# Let nova knows about the compute we installed
 - name: Install nova
   hosts: nova
   roles:
-  - {role: 'nova', tags: 'nova'}
+  - {role: 'nova', tags: 'compute'}
 
 - name: Install designate
   hosts: designate

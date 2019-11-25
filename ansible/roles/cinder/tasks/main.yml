@@ -21,8 +21,8 @@
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
     - { section: "DEFAULT", option: "glance_api_servers", value: "http://glance:9292" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }

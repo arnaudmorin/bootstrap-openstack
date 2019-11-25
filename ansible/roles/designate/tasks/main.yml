@@ -60,8 +60,8 @@
     - { section: "service:api", option: "enabled_extensions_v2", value: "quotas, reports" }
     - { section: "service:api", option: "api_base_uri", value: "http://{{hostvars['designate']['public_ip']}}:9001/" }
     - { section: "service:api", option: "workers", value: "1" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
