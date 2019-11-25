@@ -126,4 +126,100 @@ EOF
 # ens3 is already set up by ubuntu
 ifup ens4
 
+# Install plik
+curl --output /usr/local/bin/plik https://plik.arno.ovh/clients/linux-amd64/plik
+chmod +x /usr/local/bin/plik
+cat <<'EOF' > /root/.plikrc
+Url = "https://plik.arno.ovh"
+EOF
+
+# Configure tmux
+cat <<'EOF' > /root/.tmux.conf
+unbind-key -a
+set-window-option -g xterm-keys on
+set-option -g status-attr default
+set-option -g status-bg black
+set-option -g status-fg green
+set-option -g status-interval 1
+set-option -g status-justify left
+set-option -g status-keys vi
+set-option -g status-left "[#S]"                        # Session name on left
+set-option -g status-left-attr default
+set-option -g status-left-bg default
+set-option -g status-left-fg default
+set-option -g status-left-length 10
+set-option -g status-right "#H [%H:%M:%S %d.%m.%y]"     # Date and host on right
+set-option -g status-right-attr default
+set-option -g status-right-bg default
+set-option -g status-right-fg default
+set-option -g status-right-length 40
+set-option -g default-terminal "screen-256color"
+set-option -g status-position top                       # Move status bar to the top
+set-option -g renumber-windows on
+set-window-option -g window-status-current-attr bright
+set-window-option -g aggressive-resize on               # Resize
+set-window-option -g mode-keys vi                       # VI mode
+set-option -s escape-time 0                             # No wait on escape
+unbind C-b
+set-option -g prefix C-a
+bind-key : command-prompt
+bind-key & confirm-before -p "kill-window #W? (y/n)" kill-window
+bind-key c new-window  \; rename-window "-"
+bind-key -n F2 new-window  \; rename-window "-"
+bind-key -n F3 previous-window
+bind-key p previous-window
+bind-key -n F4 next-window
+bind-key n next-window
+bind-key -n C-S-F3 swap-window -t :-1
+bind-key -n C-S-F4 swap-window -t :+1
+bind-key -n F6 detach
+bind-key -n S-F6 detach-client -a
+bind-key -n F7 copy-mode
+bind-key -n M-NPage copy-mode \; send-keys NPage
+bind-key -n M-PPage copy-mode \; send-keys PPage
+bind-key -n F8 command-prompt -p "(rename-window) " "rename-window '%%'"
+bind-key -n C-F8 command-prompt -p "(rename-session) " "rename-session '%%'"
+bind-key a last-window
+bind-key 0 select-window -t 0
+bind-key 1 select-window -t 1
+bind-key 2 select-window -t 2
+bind-key 3 select-window -t 3
+bind-key 4 select-window -t 4
+bind-key 5 select-window -t 5
+bind-key 6 select-window -t 6
+bind-key 7 select-window -t 7
+bind-key 8 select-window -t 8
+bind-key 9 select-window -t 9
+bind-key h split-window -v
+bind-key v split-window -h
+bind-key -n F1 select-pane -t :.+
+bind-key -n S-F1 select-pane -t :.-
+bind-key left select-pane -L
+bind-key right select-pane -R
+bind-key up select-pane -U
+bind-key down select-pane -D
+bind-key -n S-left select-pane -L
+bind-key -n S-right select-pane -R
+bind-key -n S-up select-pane -U
+bind-key -n S-down select-pane -D
+bind-key -n C-space next-layout
+bind-key -n M-s set-window-option synchronize-panes
+bind-key -n M-z resize-pane -Z
+bind-key x confirm-before -p "kill-pane #W? (y/n)" kill-pane
+bind-key -n C-S-up resize-pane -U 10
+bind-key -n C-S-down resize-pane -D 10
+bind-key -n C-S-left resize-pane -L 10
+bind-key -n C-S-right resize-pane -R 10
+bind-key r source-file ~/.tmux.conf \; display-message "Config reloaded."
+set-option -g window-status-format " #{?window_activity_flag, #[fg=colour231]#[blink],#[fg=colour245]}#{?window_bell_flag,#[fg=colour01]#[blink],#[fg=colour245]}#I:#W "
+set-option -g monitor-activity on
+set -g window-style 'fg=default,bg=colour234'
+set -g window-active-style 'fg=default,bg=colour16'
+set -g pane-border-bg colour235
+set -g pane-border-fg colour238
+set -g pane-active-border-bg colour235
+set -g pane-active-border-fg colour51
+set -g mouse off
+EOF
+
 echo 'done'
