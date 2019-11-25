@@ -7,7 +7,7 @@
 
 - name: install nova
   apt:
-    name: ['nova-api', 'nova-conductor', 'nova-consoleauth', 'nova-novncproxy', 'nova-scheduler', 'nova-placement-api']
+    name: ['nova-api', 'nova-conductor', 'nova-consoleauth', 'nova-novncproxy', 'nova-scheduler']
     state: latest
 
 - name: configure nova
@@ -21,8 +21,10 @@
     - { section: "api_database", option: "connection", value: "mysql+pymysql://nova:{{password}}@mysql/nova_api" }
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "my_ip", value: "{{ansible_host}}" }
-    - { section: "keystone_authtoken", option: "auth_uri", value: "http://keystone:5000" }
-    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "DEFAULT", option: "use_neutron", value: "true" }
+    - { section: "DEFAULT", option: "firewall_driver", value: "nova.virt.firewall.NoopFirewallDriver" }
+    - { section: "api", option: "auth_strategy", value: "keystone" }
+    - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000/v3" }
     - { section: "keystone_authtoken", option: "memcached_servers", value: "keystone:11211" }
     - { section: "keystone_authtoken", option: "auth_type", value: "password" }
     - { section: "keystone_authtoken", option: "project_domain_name", value: "Default" }
@@ -31,21 +33,21 @@
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
     - { section: "vnc", option: "enabled", value: "True" }
-    - { section: "vnc", option: "vncserver_listen", value: "{{public_ip}}" }
-    - { section: "vnc", option: "vncserver_proxyclient_address", value: "$my_ip" }
+    - { section: "vnc", option: "server_listen", value: "{{public_ip}}" }
+    - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }
     - { section: "glance", option: "api_servers", value: "http://glance:9292" }
     - { section: "cinder", option: "os_region_name", value: "RegionOne" }
     - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
-    - { section: "placement", option: "os_region_name", value: "RegionOne" }
+    - { section: "placement", option: "region_name", value: "RegionOne" }
     - { section: "placement", option: "project_domain_name", value: "Default" }
     - { section: "placement", option: "project_name", value: "service" }
     - { section: "placement", option: "auth_type", value: "password" }
     - { section: "placement", option: "user_domain_name", value: "Default" }
-    - { section: "placement", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "placement", option: "auth_url", value: "http://keystone:5000/v3" }
     - { section: "placement", option: "username", value: "placement" }
     - { section: "placement", option: "password", value: "{{password}}" }
     - { section: "neutron", option: "url", value: "http://neutron:9696" }
-    - { section: "neutron", option: "auth_url", value: "http://keystone:35357" }
+    - { section: "neutron", option: "auth_url", value: "http://keystone:5000/v3" }
     - { section: "neutron", option: "auth_type", value: "password" }
     - { section: "neutron", option: "project_domain_name", value: "Default" }
     - { section: "neutron", option: "user_domain_name", value: "Default" }
