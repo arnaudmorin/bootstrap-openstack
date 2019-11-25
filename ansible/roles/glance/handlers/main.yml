@@ -4,9 +4,3 @@
     state: restarted
   with_items:
     - "glance-api"
-- name: restart glance-registry
-  service:
-    name: "{{item}}"
-    state: restarted
-  with_items:
-    - "glance-registry"
