@@ -209,7 +209,7 @@ Behind the scene, the bootstrapping created the instances with custom **cloud-in
 As the execution of this postinstall can take some time (few minutes), if you are SSHing to your machine quite quickly, you can check the postinstall logs in live:
 
 ```sh
-$ tailf /var/log/postinstall.log
+$ tail -f /var/log/postinstall.log
 ```
 
 The postinstall is finished when you can read _done_ at the end.
