@@ -1,1 +1,1 @@
-password: zoblesmouches42
+password: "{{ lookup('password', '~/password length=15 chars=ascii_letters,digits') }}"
