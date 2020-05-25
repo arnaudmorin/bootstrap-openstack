@@ -4,6 +4,12 @@
     state: restarted
   with_items:
     - "nova-compute"
+- name: restart libvirt
+  service:
+    name: "{{item}}"
+    state: restarted
+  with_items:
+    - "libvirtd"
 - name: restart neutron
   service:
     name: "{{item}}"

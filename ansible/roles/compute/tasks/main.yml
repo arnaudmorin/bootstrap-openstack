@@ -65,6 +65,32 @@
   notify:
     - restart nova
 
+- name: configure libvirt
+  ini_file:
+    path: /etc/libvirt/libvirtd.conf
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: null, option: "listen_tls", value: "0" }
+    - { section: null, option: "listen_tcp", value: "1" }
+    - { section: null, option: "auth_tcp", value: "\"none\"" }
+  notify:
+    - restart libvirt
+    - restart nova
+
+- name: configure libvirt default
+  ini_file:
+    path: /etc/default/libvirtd
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: null, option: "libvirtd_opts", value: "\"-l\"" }
+  notify:
+    - restart libvirt
+    - restart nova
+
 - name: configure neutron
   ini_file:
     path: /etc/neutron/neutron.conf
@@ -101,3 +127,42 @@
     - { section: "securitygroup", option: "firewall_driver", value: "neutron.agent.linux.iptables_firewall.IptablesFirewallDriver" }
   notify:
     - restart neutron
+
+- name: set nova shell to bash
+  user:
+    name: nova
+    shell: /bin/bash
+
+- name: create ssh folder
+  file:
+    path: /var/lib/nova/.ssh/
+    state: directory
+    recurse: yes
+    owner: nova
+    group: nova
+
+- name: install ssh key for migration between computes
+  copy:
+    src: /root/.ssh/id_rsa
+    dest: /var/lib/nova/.ssh/id_rsa
+    mode: 0600
+    owner: nova
+    group: nova
+
+- name: install ssh public key for migration between computes
+  copy:
+    src: /root/.ssh/id_rsa.pub
+    dest: /var/lib/nova/.ssh/authorized_keys
+    owner: nova
+    group: nova
+
+- name: install ssh config
+  copy:
+    dest: /var/lib/nova/.ssh/config
+    owner: nova
+    group: nova
+    mode: 0600
+    content: |
+      Host *
+        UserKnownHostsFile /dev/null
+        StrictHostKeyChecking no
