@@ -7,8 +7,20 @@
 
 - name: install neutron
   apt:
-    name: ["neutron-server", "neutron-plugin-ml2", "neutron-linuxbridge-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent"]
+    name: ["neutron-server", "neutron-plugin-ml2", "neutron-openvswitch-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent"]
     state: latest
+
+- name: create br-ex ovs bridge
+  openvswitch_bridge:
+    bridge: br-ex
+    fail_mode: standalone
+    state: present
+
+- name: add ens5 in br-ex
+  openvswitch_port:
+    bridge: br-ex
+    port: ens5
+    state: present
 
 - name: configure neutron
   ini_file:
@@ -19,11 +31,12 @@
   with_items:
     - { section: "database", option: "connection", value: "mysql+pymysql://neutron:{{password}}@mysql/neutron" }
     - { section: "DEFAULT", option: "core_plugin", value: "ml2" }
-    - { section: "DEFAULT", option: "service_plugins", value: "router" }
+    - { section: "DEFAULT", option: "service_plugins", value: "router,segments" }
     - { section: "DEFAULT", option: "allow_overlapping_ips", value: "true" }
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "notify_nova_on_port_status_changes", value: "true" }
     - { section: "DEFAULT", option: "notify_nova_on_port_data_changes", value: "true" }
+    - { section: "DEFAULT", option: "router_distributed", value: "true" }
     - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/neutron/tmp" }
     - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
@@ -53,7 +66,7 @@
   with_items:
     - { section: "ml2", option: "type_drivers", value: "flat,vlan,vxlan" }
     - { section: "ml2", option: "tenant_network_types", value: "vxlan" }
-    - { section: "ml2", option: "mechanism_drivers", value: "linuxbridge,l2population" }
+    - { section: "ml2", option: "mechanism_drivers", value: "openvswitch,l2population" }
     - { section: "ml2", option: "extension_drivers", value: "port_security" }
     - { section: "ml2_type_flat", option: "flat_networks", value: "provider" }
     - { section: "ml2_type_vxlan", option: "vni_ranges", value: "1:1000" }
@@ -62,17 +75,19 @@
     - restart neutron
 - name: configure neutron l2 agent
   ini_file:
-    path: /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+    path: /etc/neutron/plugins/ml2/openvswitch_agent.ini
     section: "{{item.section}}"
     option: "{{item.option}}"
     value: "{{item.value}}"
   with_items:
-    - { section: "linux_bridge", option: "physical_interface_mappings", value: "provider:ens5" }
-    - { section: "vxlan", option: "enable_vxlan", value: "true" }
-    - { section: "vxlan", option: "local_ip", value: "{{ansible_host}}" }
-    - { section: "vxlan", option: "l2_population", value: "true" }
+    - { section: "agent", option: "tunnel_types", value: "vxlan" }
+    - { section: "agent", option: "l2_population", value: "true" }
+    - { section: "agent", option: "arp_responder", value: "true" }
+    - { section: "agent", option: "enable_distributed_routing", value: "true" }
+    - { section: "ovs", option: "local_ip", value: "{{ansible_host}}" }
+    - { section: "ovs", option: "bridge_mappings", value: "provider:br-ex" }
     - { section: "securitygroup", option: "enable_security_group", value: "true" }
-    - { section: "securitygroup", option: "firewall_driver", value: "neutron.agent.linux.iptables_firewall.IptablesFirewallDriver" }
+    - { section: "securitygroup", option: "firewall_driver", value: "openvswitch" }
   notify:
     - restart neutron
 - name: configure neutron l3 agent
@@ -82,7 +97,8 @@
     option: "{{item.option}}"
     value: "{{item.value}}"
   with_items:
-    - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+    - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
+    - { section: "DEFAULT", option: "agent_mode", value: "dvr_snat" }
   notify:
     - restart neutron
 - name: configure neutron dhcp agent
@@ -92,7 +108,7 @@
     option: "{{item.option}}"
     value: "{{item.value}}"
   with_items:
-    - { section: "DEFAULT", option: "interface_driver", value: "linuxbridge" }
+    - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
     - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
     - { section: "DEFAULT", option: "enable_isolated_metadata", value: "true" }
   notify:
