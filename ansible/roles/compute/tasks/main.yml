@@ -149,6 +149,7 @@
   with_items:
     - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
     - { section: "DEFAULT", option: "agent_mode", value: "dvr" }
+    - { section: "DEFAULT", option: "extensions", value: "port_forwarding" }
   notify:
     - restart neutron
 

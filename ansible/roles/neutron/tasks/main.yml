@@ -31,7 +31,7 @@
   with_items:
     - { section: "database", option: "connection", value: "mysql+pymysql://neutron:{{password}}@mysql/neutron" }
     - { section: "DEFAULT", option: "core_plugin", value: "ml2" }
-    - { section: "DEFAULT", option: "service_plugins", value: "router,segments" }
+    - { section: "DEFAULT", option: "service_plugins", value: "router,segments,port_forwarding" }
     - { section: "DEFAULT", option: "allow_overlapping_ips", value: "true" }
     - { section: "DEFAULT", option: "transport_url", value: "rabbit://openstack:{{password}}@rabbit" }
     - { section: "DEFAULT", option: "notify_nova_on_port_status_changes", value: "true" }
@@ -99,6 +99,7 @@
   with_items:
     - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
     - { section: "DEFAULT", option: "agent_mode", value: "dvr_snat" }
+    - { section: "agent", option: "extensions", value: "port_forwarding" }
   notify:
     - restart neutron
 - name: configure neutron dhcp agent

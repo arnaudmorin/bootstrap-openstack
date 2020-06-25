@@ -95,12 +95,15 @@ function create_network_public(){(
     # The service-type network:floatingip_agent_gateway
     # will let IPAM give IP from this subnet for FIP namespaces
     # This is used to reduce number of public IP on neutron DVR
+    # Note that we still need to set a valid next-hop gateway
+    # ($GATEWAY here)
     openstack subnet create \
      --network public \
      --subnet-range 10.0.0.0/16 \
+     --gateway $GATEWAY \
      --no-dhcp \
      --service-type 'network:floatingip_agent_gateway' \
-     fip-subnet
+     _internal_fip_subnet
 )}
 
 function create_network_private(){(
