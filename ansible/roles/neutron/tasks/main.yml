@@ -7,7 +7,7 @@
 
 - name: install neutron
   apt:
-    name: ["neutron-server", "neutron-plugin-ml2", "neutron-openvswitch-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent"]
+    name: ["neutron-server", "neutron-plugin-ml2"]
     state: latest
 
 - name: create br-ex ovs bridge
@@ -37,6 +37,7 @@
     - { section: "DEFAULT", option: "notify_nova_on_port_status_changes", value: "true" }
     - { section: "DEFAULT", option: "notify_nova_on_port_data_changes", value: "true" }
     - { section: "DEFAULT", option: "router_distributed", value: "true" }
+    - { section: "DEFAULT", option: "l3_ha", value: "true" }
     - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/neutron/tmp" }
     - { section: "keystone_authtoken", option: "www_authenticate_uri", value: "http://keystone:5000" }
     - { section: "keystone_authtoken", option: "auth_url", value: "http://keystone:5000" }
@@ -71,58 +72,6 @@
     - { section: "ml2_type_flat", option: "flat_networks", value: "provider" }
     - { section: "ml2_type_vxlan", option: "vni_ranges", value: "1:1000" }
     - { section: "securitygroup", option: "enable_ipset", value: "true" }
-  notify:
-    - restart neutron
-- name: configure neutron l2 agent
-  ini_file:
-    path: /etc/neutron/plugins/ml2/openvswitch_agent.ini
-    section: "{{item.section}}"
-    option: "{{item.option}}"
-    value: "{{item.value}}"
-  with_items:
-    - { section: "agent", option: "tunnel_types", value: "vxlan" }
-    - { section: "agent", option: "l2_population", value: "true" }
-    - { section: "agent", option: "arp_responder", value: "true" }
-    - { section: "agent", option: "enable_distributed_routing", value: "true" }
-    - { section: "ovs", option: "local_ip", value: "{{ansible_host}}" }
-    - { section: "ovs", option: "bridge_mappings", value: "provider:br-ex" }
-    - { section: "securitygroup", option: "enable_security_group", value: "true" }
-    - { section: "securitygroup", option: "firewall_driver", value: "openvswitch" }
-  notify:
-    - restart neutron
-- name: configure neutron l3 agent
-  ini_file:
-    path: /etc/neutron/l3_agent.ini
-    section: "{{item.section}}"
-    option: "{{item.option}}"
-    value: "{{item.value}}"
-  with_items:
-    - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
-    - { section: "DEFAULT", option: "agent_mode", value: "dvr_snat" }
-    - { section: "agent", option: "extensions", value: "port_forwarding" }
-  notify:
-    - restart neutron
-- name: configure neutron dhcp agent
-  ini_file:
-    path: /etc/neutron/dhcp_agent.ini
-    section: "{{item.section}}"
-    option: "{{item.option}}"
-    value: "{{item.value}}"
-  with_items:
-    - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
-    - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
-    - { section: "DEFAULT", option: "enable_isolated_metadata", value: "true" }
-  notify:
-    - restart neutron
-- name: configure neutron metadata agent
-  ini_file:
-    path: /etc/neutron/metadata_agent.ini
-    section: "{{item.section}}"
-    option: "{{item.option}}"
-    value: "{{item.value}}"
-  with_items:
-    - { section: "DEFAULT", option: "nova_metadata_host", value: "nova" }
-    - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{password}}" }
   notify:
     - restart neutron
 

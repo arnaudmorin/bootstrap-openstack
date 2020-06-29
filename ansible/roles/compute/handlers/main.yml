@@ -15,5 +15,7 @@
     name: "{{item}}"
     state: restarted
   with_items:
+    - "neutron-dhcp-agent"
+    - "neutron-metadata-agent"
     - "neutron-l3-agent"
     - "neutron-openvswitch-agent"

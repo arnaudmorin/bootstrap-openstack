@@ -8,7 +8,7 @@
 - name: install packages
   apt:
     name:
-    name: ["neutron-openvswitch-agent", "neutron-l3-agent", "nova-compute"]
+    name: ["neutron-openvswitch-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent", "nova-compute"]
     state: latest
 
 - name: create br-ex ovs bridge
@@ -148,8 +148,33 @@
     value: "{{item.value}}"
   with_items:
     - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
-    - { section: "DEFAULT", option: "agent_mode", value: "dvr" }
+    - { section: "DEFAULT", option: "agent_mode", value: "dvr_snat" }
     - { section: "DEFAULT", option: "extensions", value: "port_forwarding" }
+    - { section: "DEFAULT", option: "ha_vrrp_auth_password", value: "{{password}}" }
+    - { section: "DEFAULT", option: "ha_vrrp_health_check_interval", value: "30" }
+  notify:
+    - restart neutron
+- name: configure neutron dhcp agent
+  ini_file:
+    path: /etc/neutron/dhcp_agent.ini
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: "DEFAULT", option: "interface_driver", value: "openvswitch" }
+    - { section: "DEFAULT", option: "dhcp_driver", value: "neutron.agent.linux.dhcp.Dnsmasq" }
+    - { section: "DEFAULT", option: "enable_isolated_metadata", value: "true" }
+  notify:
+    - restart neutron
+- name: configure neutron metadata agent
+  ini_file:
+    path: /etc/neutron/metadata_agent.ini
+    section: "{{item.section}}"
+    option: "{{item.option}}"
+    value: "{{item.value}}"
+  with_items:
+    - { section: "DEFAULT", option: "nova_metadata_host", value: "nova" }
+    - { section: "DEFAULT", option: "metadata_proxy_shared_secret", value: "{{password}}" }
   notify:
     - restart neutron
 
