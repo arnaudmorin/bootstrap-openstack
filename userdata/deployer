@@ -88,10 +88,12 @@ cat <<EOF > /etc/ansible/openstack.yml
 clouds:
   ovh:
     auth:
-      auth_url: https://auth.cloud.ovh.net/v2.0/
+      auth_url: https://auth.cloud.ovh.net/v3/
       username: __OS_USERNAME__
       password: __OS_PASSWORD__
       project_name: __OS_TENANT_NAME__
+      user_domain_name: Default
+      project_domain_name: Default
     region_name: __OS_REGION_NAME__
 ansible:
   use_hostnames: True

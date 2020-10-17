@@ -54,3 +54,4 @@ boot horizon
 boot neutron public
 boot compute-1 public
 boot designate
+boot octavia
