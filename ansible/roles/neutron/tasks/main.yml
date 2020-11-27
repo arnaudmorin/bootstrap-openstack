@@ -10,18 +10,6 @@
     name: ["neutron-server", "neutron-plugin-ml2"]
     state: latest
 
-- name: create br-ex ovs bridge
-  openvswitch_bridge:
-    bridge: br-ex
-    fail_mode: standalone
-    state: present
-
-- name: add ens5 in br-ex
-  openvswitch_port:
-    bridge: br-ex
-    port: ens5
-    state: present
-
 - name: configure neutron
   ini_file:
     path: /etc/neutron/neutron.conf
