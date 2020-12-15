@@ -7,7 +7,7 @@
 
 - name: install placement
   apt:
-    name: ['placement-api']
+    name: ['placement-api', 'python3-pymysql']
     state: latest
 
 - name: configure placement
