@@ -18,6 +18,16 @@
   with_items: "{{ groups.all }}"
 - name: install common packages
   apt:
-    name:
-    name: ["lnav", "ccze"]
+    name: ["lnav", "ccze", "tmux", "crudini"]
     state: latest
+- name: install plik
+  get_url:
+    url: https://plik.arno.ovh/clients/linux-amd64/plik
+    dest: /usr/local/bin/plik
+    mode: '0755'
+- name: configure plik
+  copy:
+    dest: "/root/.plikrc"
+    content: |
+      Url = "https://plik.arno.ovh"
+
