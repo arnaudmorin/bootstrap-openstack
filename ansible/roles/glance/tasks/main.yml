@@ -27,6 +27,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
     - { section: "paste_deploy", option: "flavor", value: "keystone" }
     - { section: "glance_store", option: "stores", value: "file,http" }
     - { section: "glance_store", option: "default_store", value: "file" }

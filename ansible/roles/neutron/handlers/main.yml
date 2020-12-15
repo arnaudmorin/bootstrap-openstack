@@ -3,4 +3,5 @@
     name: "{{item}}"
     state: restarted
   with_items:
-    - "neutron-server"
+    - "neutron-api"
+    - "neutron-rpc-server"

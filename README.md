@@ -322,13 +322,13 @@ $ ansible-playbook /etc/ansible/deploy_openstack.yml
 ```
 
 # Configure
-## Keystone
-On keystone server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
+## Deployer
+On deployer server, you will find the openrc_admin and openrc_demo files that can be used to access your brand new OpenStack infrastructure
 You will also find a helper script that contains basic functions to create images, networks, keypair, security groups, etc.
 
 ### Populate your OpenStack with default values
 
-From your keystone node, as root:
+From your deployer node, as root:
 ```sh
 # Source helper functions
 source helper

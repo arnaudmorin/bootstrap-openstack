@@ -2,3 +2,58 @@
 - name: import generic tasks
   import_tasks: common.yml
 
+- name: include vars
+  include_vars: vars/vars.yml
+
+- name: install some packages
+  apt:
+    name: ipcalc
+    state: latest
+
+- name: install openstack client
+  apt:
+    name: python-openstackclient
+    state: latest
+- name: install openstack designate client
+  apt:
+    name: python-designateclient
+    state: latest
+- name: install oslo.log
+  apt:
+    name: python-oslo.log
+    state: latest
+- name: create bash_completion.d
+  file:
+    path: /etc/bash_completion.d/
+    state: directory
+    mode: 0755
+- name: install openstack client bash completion
+  shell: |
+    openstack complete > /etc/bash_completion.d/openstack
+  args:
+    creates: /etc/bash_completion.d/openstack
+
+- name: create openrc_admin file
+  vars:
+    openrc_user: admin
+    openrc_password: "{{password}}"
+    openrc_project: admin
+    openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
+  template:
+    src: ./config/openrc.j2
+    dest: /root/openrc_admin
+- name: create openrc_demo file
+  vars:
+    openrc_user: demo
+    openrc_password: "{{password}}"
+    openrc_project: demo
+    openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
+  template:
+    src: ./config/openrc.j2
+    dest: /root/openrc_demo
+
+- name: copy helper script
+  copy:
+    src: ./config/helper
+    dest: /root/helper
+

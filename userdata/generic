@@ -12,15 +12,15 @@ function log_handler {
 
 exec &> >(log_handler)
 
+grep 'backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian buster-backports main contrib non-free' >> /etc/apt/sources.list
+
 # Update packages
 export DEBIAN_FRONTEND=noninteractive
-apt update
-apt -y install software-properties-common
-add-apt-repository -y cloud-archive:stein
-apt update
-apt -y purge cloud-init
-apt -y dist-upgrade
-apt -y install python chrony lnav ifupdown
+apt-get update
+apt-get -y install extrepo
+extrepo enable openstack_ussuri
+apt-get update
+apt-get -y install ifupdown
 
 # Deployer will use this key (I named it zob) to connect to other machines
 # Note: this is not very secure to use this key because:
@@ -31,28 +31,37 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDY15cdBmIs2XOpe4EiFCsaY6bmUmK/GysMoLl4UG51
 EOF
 
 # Configure network
-# ens3 --> Ext-Net interface. Mostly used to access API over regular internet connection
-# ens4 --> management interface. Mostly used by some OpenStack services to communicate
-# ens5 --> public interface. Used by neutron and compute to handle VM <--> Internet connectivity
+# eth0 --> Ext-Net interface. Mostly used to access API over regular internet connection
+# eth1 --> management interface. Mostly used by some OpenStack services to communicate
+# eth2 --> public interface. Used by neutron and compute to handle VM <--> Internet connectivity
 cat <<'EOF' > /etc/network/interfaces
 auto lo
 iface lo inet loopback
 
-auto ens3
-iface ens3 inet dhcp
+auto eth0
+iface eth0 inet dhcp
 
-auto ens4
-iface ens4 inet dhcp
+auto eth1
+iface eth1 inet dhcp
 
-auto ens5
-iface ens5 inet manual
+auto eth2
+iface eth2 inet manual
 up ip link set dev $IFACE up
 up ip link set dev $IFACE mtu 9000
 down ip link set dev $IFACE down
 EOF
 
-# ens3 is already set up by ubuntu
-ifup ens4
-ifup ens5
+# eth0 is already set up by debian
+ifup eth1
+ifup eth2
+
+# Install plik
+curl --output /usr/local/bin/plik https://plik.arno.ovh/clients/linux-amd64/plik
+chmod +x /usr/local/bin/plik
+cat <<'EOF' > /root/.plikrc
+Url = "https://plik.arno.ovh"
+EOF
+
+apt-get -y purge cloud-init
 
 echo 'done'

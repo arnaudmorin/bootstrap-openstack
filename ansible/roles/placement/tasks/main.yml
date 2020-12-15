@@ -27,8 +27,9 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "placement" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
   notify:
-    - restart apache2
+    - restart placement
 
 - name: initiate placement database
   shell: su -s /bin/sh -c "placement-manage db sync" placement && touch /root/.ansible_initiate_placement_db

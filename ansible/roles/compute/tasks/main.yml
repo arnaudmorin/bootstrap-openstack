@@ -8,7 +8,7 @@
 - name: install packages
   apt:
     name:
-    name: ["neutron-openvswitch-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent", "nova-compute"]
+    name: ["neutron-openvswitch-agent", "neutron-l3-agent", "neutron-dhcp-agent", "neutron-metadata-agent", "nova-compute", "tcpdump"]
     state: latest
 
 - name: create br-ex ovs bridge
@@ -17,10 +17,10 @@
     fail_mode: standalone
     state: present
 
-- name: add ens5 in br-ex
+- name: add eth2 in br-ex
   openvswitch_port:
     bridge: br-ex
-    port: ens5
+    port: eth2
     state: present
 
 - name: configure nova
@@ -50,7 +50,8 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
-    - { section: "placement", option: "os_region_name", value: "RegionOne" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
+    - { section: "placement", option: "region_name", value: "RegionOne" }
     - { section: "placement", option: "project_domain_name", value: "Default" }
     - { section: "placement", option: "project_name", value: "service" }
     - { section: "placement", option: "auth_type", value: "password" }
@@ -67,6 +68,7 @@
     - { section: "neutron", option: "project_name", value: "service" }
     - { section: "neutron", option: "username", value: "neutron" }
     - { section: "neutron", option: "password", value: "{{password}}" }
+    - { section: "neutron", option: "service_name", value: "network" }          # NOTE debian package is overwritting this to neutron, which is wrong. So get it back to network
   notify:
     - restart nova
 - name: configure nova (delete some lines)
@@ -121,6 +123,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "neutron" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
   notify:
     - restart neutron
 - name: configure neutron l2 agent

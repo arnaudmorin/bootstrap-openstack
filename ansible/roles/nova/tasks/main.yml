@@ -7,7 +7,7 @@
 
 - name: install nova
   apt:
-    name: ['nova-api', 'nova-conductor', 'nova-consoleauth', 'nova-novncproxy', 'nova-scheduler']
+    name: ['nova-api', 'nova-conductor', 'nova-consoleproxy', 'nova-scheduler']
     state: latest
 
 - name: configure nova
@@ -32,6 +32,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
     - { section: "vnc", option: "enabled", value: "True" }
     - { section: "vnc", option: "server_listen", value: "{{public_ip}}" }
     - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }
@@ -57,6 +58,8 @@
     - { section: "neutron", option: "password", value: "{{password}}" }
     - { section: "neutron", option: "service_metadata_proxy", value: "true" }
     - { section: "neutron", option: "metadata_proxy_shared_secret", value: "{{password}}" }
+    - { section: "neutron", option: "service_name", value: "network" }          # NOTE debian package is overwritting this to neutron, which is wrong. So get it back to network
+    - { section: "scheduler", option: "discover_hosts_in_cells_interval", value: "60" }
   notify:
     - restart nova
 - name: configure nova (delete some lines)
@@ -82,5 +85,3 @@
   shell: su -s /bin/sh -c "nova-manage db sync" nova && touch /root/.ansible_initiate_nova_db
   args:
     creates: /root/.ansible_initiate_nova_db
-- name: discover hosts
-  shell: su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova

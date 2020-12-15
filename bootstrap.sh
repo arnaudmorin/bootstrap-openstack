@@ -32,7 +32,7 @@ function boot(){(
             --key-name zob \
             --nic net-id=Ext-Net \
             --nic net-id=management $EXTRA \
-            --image 'Ubuntu 18.04' \
+            --image 'Debian 10' \
             --flavor c2-7 \
             --user-data /tmp/userdata__$$ \
             $NAME
@@ -49,9 +49,7 @@ boot keystone
 boot nova
 boot placement
 boot glance
-boot cinder
 boot horizon
-boot neutron public
+boot neutron
 boot compute-1 public
 boot designate
-boot octavia

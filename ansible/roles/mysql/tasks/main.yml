@@ -11,7 +11,7 @@
     id: f1656f24c74cd1d8
 - name: add apt repository for mariadb
   apt_repository:
-    repo: deb [arch=amd64,arm64,i386,ppc64el] http://mariadb.mirrors.ovh.net/MariaDB/repo/10.4/ubuntu bionic main
+    repo: deb [arch=amd64,arm64,i386,ppc64el] http://mariadb.mirrors.ovh.net/MariaDB/repo/10.4/debian buster main
     state: present
 - name: install mysql
   apt:
@@ -32,7 +32,6 @@
     - placement
     - neutron
     - glance
-    - cinder
     - designate
     - designate_pm
 - name: create users
@@ -43,7 +42,6 @@
     - placement
     - neutron
     - glance
-    - cinder
     - designate
 - name: ensure mysql is running
   service:

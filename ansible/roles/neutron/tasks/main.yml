@@ -7,7 +7,7 @@
 
 - name: install neutron
   apt:
-    name: ["neutron-server", "neutron-plugin-ml2"]
+    name: ["neutron-api", "neutron-rpc-server"]
     state: latest
 
 - name: configure neutron
@@ -36,6 +36,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
     - { section: "nova", option: "auth_url", value: "http://keystone:5000" }
     - { section: "nova", option: "auth_type", value: "password" }
     - { section: "nova", option: "project_domain_name", value: "Default" }

@@ -24,11 +24,6 @@
   roles:
   - {role: 'glance', tags: 'glance'}
 
-- name: Install cinder
-  hosts: cinder
-  roles:
-  - {role: 'cinder', tags: 'cinder'}
-
 - name: Install nova
   hosts: nova
   roles:
@@ -53,14 +48,3 @@
   hosts: compute-*
   roles:
   - {role: 'compute', tags: 'compute'}
-
-# Let nova knows about the compute we installed
-- name: Install nova
-  hosts: nova
-  roles:
-  - {role: 'nova', tags: 'compute'}
-
-- name: Install designate
-  hosts: designate
-  roles:
-  - {role: 'designate', tags: 'designate'}

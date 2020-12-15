@@ -4,7 +4,7 @@
 
 - name: install horizon
   apt:
-    name: ['openstack-dashboard']
+    name: ['openstack-dashboard', 'openstack-dashboard-apache']
     state: latest
 - name: configure horizon
   ini_file:

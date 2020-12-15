@@ -13,7 +13,7 @@
 - name: configure memcached
   lineinfile:
     path: /etc/memcached.conf
-    regexp: '^-l 127\.0\.0\.1'
+    regexp: '^-l .+'
     line: "-l {{hostvars['keystone']['ansible_host']}}"
   notify:
     - restart memcached
@@ -36,7 +36,7 @@
     - { section: "database", option: "connection", value: "mysql+pymysql://keystone:{{password}}@mysql/keystone" }
     - { section: "token", option: "provider", value: "fernet" }
   notify:
-    - restart apache2
+    - restart keystone
 - name: initiate keystone database
   shell: su -s /bin/sh -c "keystone-manage db_sync" keystone && touch /root/.ansible_initiate_keystone_db
   args:
@@ -56,30 +56,30 @@
     touch /root/.ansible_initiate_keystone
   args:
     creates: /root/.ansible_initiate_keystone
-- name: ensure apache2 is running
+- name: ensure keystone is running
   service:
-    name: apache2
+    name: keystone
     state: started
 
 - name: install openstack client
   apt:
     name: python-openstackclient
     state: latest
-- name: install openstack designate client
-  apt:
-    name: python-designateclient
-    state: latest
 - name: install oslo.log
   apt:
     name: python-oslo.log
     state: latest
+- name: create bash_completion.d
+  file:
+    path: /etc/bash_completion.d/
+    state: directory
+    mode: 0755
 - name: install openstack client bash completion
   shell: |
     openstack complete > /etc/bash_completion.d/openstack
   args:
     creates: /etc/bash_completion.d/openstack
-- name: install python shade
-  apt: name=python-shade state=latest
+
 - name: create openrc_admin file
   vars:
     openrc_user: admin
@@ -89,11 +89,6 @@
   template:
     src: ./config/openrc.j2
     dest: /root/openrc_admin
-
-- name: copy helper script
-  copy:
-    src: ./config/helper
-    dest: /root/helper
 
 - name: create project service
   shell: |
@@ -122,7 +117,6 @@
     - neutron
     - placement
     - glance
-    - cinder
     - designate
 - name: add admin role to users for service project
   shell: |
@@ -140,7 +134,6 @@
     - neutron
     - placement
     - glance
-    - cinder
     - designate
 - name: create services
   shell: |
@@ -198,34 +191,6 @@
   args:
     executable: /bin/bash
     creates: /root/.ansible_endpoint_glance_{{item}}
-  with_items:
-    - public
-    - admin
-    - internal
-- name: create services endpoints for cinder - volumev2
-  shell: |
-    source /root/openrc_admin
-    openstack endpoint create \
-      --region RegionOne \
-      volumev2 {{item}} http://{{hostvars['cinder']['public_ip']}}:8776/v2/%\(project_id\)s
-    [ $? -eq 0 ] && touch /root/.ansible_endpoint_cinder_{{item}}_v2
-  args:
-    executable: /bin/bash
-    creates: /root/.ansible_endpoint_cinder_{{item}}_v2
-  with_items:
-    - public
-    - admin
-    - internal
-- name: create services endpoints for cinder - volumev3
-  shell: |
-    source /root/openrc_admin
-    openstack endpoint create \
-      --region RegionOne \
-      volumev3 {{item}} http://{{hostvars['cinder']['public_ip']}}:8776/v2/%\(project_id\)s
-    [ $? -eq 0 ] && touch /root/.ansible_endpoint_cinder_{{item}}_v3
-  args:
-    executable: /bin/bash
-    creates: /root/.ansible_endpoint_cinder_{{item}}_v3
   with_items:
     - public
     - admin
@@ -301,12 +266,3 @@
   args:
     executable: /bin/bash
     creates: /root/.ansible_role_user_demo
-- name: create openrc_demo file
-  vars:
-    openrc_user: demo
-    openrc_password: "{{password}}"
-    openrc_project: demo
-    openrc_auth_url: "http://{{hostvars['keystone']['public_ip']}}:5000/v3"
-  template:
-    src: ./config/openrc.j2
-    dest: /root/openrc_demo
