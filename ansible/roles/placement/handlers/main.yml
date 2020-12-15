@@ -1,4 +1,4 @@
-- name: restart apache2
+- name: restart placement
   service:
     name: "{{item}}"
     state: restarted
