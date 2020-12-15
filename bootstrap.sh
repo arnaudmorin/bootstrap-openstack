@@ -32,7 +32,7 @@ function boot(){(
             --key-name zob \
             --nic net-id=Ext-Net \
             --nic net-id=management $EXTRA \
-            --image 'Ubuntu 18.04' \
+            --image 'Debian 10' \
             --flavor c2-7 \
             --user-data /tmp/userdata__$$ \
             $NAME

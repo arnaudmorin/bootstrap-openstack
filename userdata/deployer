@@ -20,7 +20,7 @@ apt-get update
 apt-get -y install extrepo
 extrepo enable openstack_ussuri
 apt-get update
-apt-get -y install mosh lnav crudini ansible git tmux ifupdown python-os-client-config python-shade
+apt-get -y install mosh ansible git tmux ifupdown python-os-client-config python-shade
 
 # Deployer will use this key (I named it zob) to connect to other machines
 # Note: this is not very secure to use this key because:

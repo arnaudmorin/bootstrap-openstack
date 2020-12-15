@@ -20,7 +20,7 @@ apt-get update
 apt-get -y install extrepo
 extrepo enable openstack_ussuri
 apt-get update
-apt-get -y install lnav crudini tmux ifupdown
+apt-get -y install ifupdown
 
 # Deployer will use this key (I named it zob) to connect to other machines
 # Note: this is not very secure to use this key because:

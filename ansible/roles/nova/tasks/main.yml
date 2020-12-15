@@ -7,7 +7,7 @@
 
 - name: install nova
   apt:
-    name: ['nova-api', 'nova-conductor', 'nova-consoleauth', 'nova-novncproxy', 'nova-scheduler']
+    name: ['nova-api', 'nova-conductor', 'nova-consoleproxy', 'nova-scheduler']
     state: latest
 
 - name: configure nova
