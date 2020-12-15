@@ -19,7 +19,7 @@
     state: latest
 - name: install openstack client bash completion
   shell: |
-    openstack complete > /etc/bash_completion.d/openstack
+    mkdir -p /etc/bash_completion.d/ ; openstack complete > /etc/bash_completion.d/openstack
   args:
     creates: /etc/bash_completion.d/openstack
 

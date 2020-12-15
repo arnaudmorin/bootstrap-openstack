@@ -13,7 +13,7 @@
 - name: configure memcached
   lineinfile:
     path: /etc/memcached.conf
-    regexp: '^-l 127\.0\.0\.1'
+    regexp: '^-l .+'
     line: "-l {{hostvars['keystone']['ansible_host']}}"
   notify:
     - restart memcached
