@@ -32,6 +32,7 @@
     - { section: "keystone_authtoken", option: "project_name", value: "service" }
     - { section: "keystone_authtoken", option: "username", value: "nova" }
     - { section: "keystone_authtoken", option: "password", value: "{{password}}" }
+    - { section: "keystone_authtoken", option: "region_name", value: "RegionOne" }      # NOTE debian package is overwritting with regionOne (this is a bug IMO)
     - { section: "vnc", option: "enabled", value: "True" }
     - { section: "vnc", option: "server_listen", value: "{{public_ip}}" }
     - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }

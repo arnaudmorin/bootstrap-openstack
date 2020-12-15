@@ -4,7 +4,8 @@
     state: restarted
   with_items:
     - "nova-api"
-    - "nova-consoleauth"
+    - "nova-api-metadata"
+    - "nova-serialproxy"
+    - "nova-spicehtml5proxy"
     - "nova-scheduler"
     - "nova-conductor"
-    - "nova-novncproxy"
