@@ -36,7 +36,7 @@
     - { section: "database", option: "connection", value: "mysql+pymysql://keystone:{{password}}@mysql/keystone" }
     - { section: "token", option: "provider", value: "fernet" }
   notify:
-    - restart apache2
+    - restart keystone
 - name: initiate keystone database
   shell: su -s /bin/sh -c "keystone-manage db_sync" keystone && touch /root/.ansible_initiate_keystone_db
   args:
@@ -56,9 +56,9 @@
     touch /root/.ansible_initiate_keystone
   args:
     creates: /root/.ansible_initiate_keystone
-- name: ensure apache2 is running
+- name: ensure keystone is running
   service:
-    name: apache2
+    name: keystone
     state: started
 
 - name: create project service

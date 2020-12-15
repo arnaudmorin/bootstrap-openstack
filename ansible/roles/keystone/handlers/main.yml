@@ -2,7 +2,7 @@
   service:
     name: memcached
     state: restarted
-- name: restart apache2
+- name: restart keystone
   service:
-    name: apache2
+    name: keystone
     state: restarted
