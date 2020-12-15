@@ -2,6 +2,9 @@
 - name: import generic tasks
   import_tasks: common.yml
 
+- name: include vars
+  include_vars: vars/vars.yml
+
 - name: install openstack client
   apt:
     name: python-openstackclient
