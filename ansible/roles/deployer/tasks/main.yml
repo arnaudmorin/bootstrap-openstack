@@ -17,9 +17,14 @@
   apt:
     name: python-oslo.log
     state: latest
+- name: create bash_completion.d
+  file:
+    path: /etc/bash_completion.d/
+    state: directory
+    mode: 0755
 - name: install openstack client bash completion
   shell: |
-    mkdir -p /etc/bash_completion.d/ ; openstack complete > /etc/bash_completion.d/openstack
+    openstack complete > /etc/bash_completion.d/openstack
   args:
     creates: /etc/bash_completion.d/openstack
 
