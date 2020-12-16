@@ -76,7 +76,7 @@ EOF
 
 # Clone bootstrap repo
 cd /root/
-git clone https://github.com/arnaudmorin/bootstrap-openstack.git
+git clone https://github.com/arnaudmorin/bootstrap-openstack.git -b ussuri
 
 # Configure ansible
 mv /etc/ansible/ /etc/ansible.old
