@@ -337,7 +337,7 @@ source helper
 source openrc_admin
 create_flavors
 create_image_cirros
-create_image_ubuntu
+create_image_debian
 # Before running this one, adjust the parameters with your network settings
 create_network_public 5.135.0.208/28 5.135.0.222
 

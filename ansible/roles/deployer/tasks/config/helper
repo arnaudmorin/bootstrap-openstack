@@ -27,6 +27,16 @@ function create_image_ubuntu(){(
      "Ubuntu 16.04"
 )}
 
+function create_image_debian(){(
+    [ -f debian-10-openstack-amd64.qcow2 ] || wget https://cloud.debian.org/images/cloud/OpenStack/current/debian-10-openstack-amd64.qcow2
+    openstack image create \
+     --file debian-10-openstack-amd64.qcow2 \
+     --disk-format qcow2 \
+     --container-format bare \
+     --public \
+     "Debian 10"
+)}
+
 function create_key(){(
     openstack keypair create --public-key ~/.ssh/authorized_keys fake
 )}
