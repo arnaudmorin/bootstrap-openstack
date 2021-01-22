@@ -38,7 +38,7 @@ function create_image_debian(){(
 )}
 
 function create_key(){(
-    openstack keypair create --public-key ~/.ssh/authorized_keys fake
+    openstack keypair create --public-key ~/.ssh/authorized_keys zob
 )}
 
 function create_rules(){(
@@ -52,7 +52,7 @@ function create_server_private(){(
      --flavor nano \
      --image cirros \
      --net private \
-     --key-name fake \
+     --key-name zob \
      n1
 )}
 
@@ -61,7 +61,7 @@ function create_server_public(){(
      --flavor nano \
      --image cirros \
       --net public \
-      --key-name fake \
+      --key-name zob \
      p1
 )}
 
