@@ -7,6 +7,18 @@ function create_keypair(){(
     fi
 )}
 
+function create_networks(){(
+    networks=$(openstack network list -c Name -f value)
+    echo $networks | grep -q 'management' || {
+        openstack network create management
+        openstack subnet create --dhcp --gateway none --subnet-range 192.168.1.0/24 --network management --dns-nameserver 0.0.0.0 192.168.1.0/24
+    }
+    echo $networks | grep -q 'public' || {
+        openstack network create public --provider-network-type=vrack --provider-segment=0
+        openstack subnet create --no-dhcp --gateway none --subnet-range 192.168.1.0/24 --network public --dns-nameserver 0.0.0.0 192.168.1.0/24
+    }
+)}
+
 function boot(){(
     NAME=$1
     PUBLIC_NET=$2
@@ -42,6 +54,7 @@ function boot(){(
 )}
 
 create_keypair
+create_networks
 boot deployer
 boot rabbit
 boot mysql
