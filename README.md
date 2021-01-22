@@ -194,7 +194,7 @@ To do so, you will need to connect to the deployer with the SSH key (named _zob_
 
 ```sh
 $ chmod 600 data/zob.key                    # Because permissions of the key were too loose when you cloned this repo.
-$ ssh -i data/zob.key ubuntu@deployer_ip    # Replace deployer_ip with the real IP.
+$ ssh -i data/zob.key debian@deployer_ip    # Replace deployer_ip with the real IP.
 ```
 
 Now that you are inside the deployer, be root
