@@ -35,6 +35,9 @@
     - { section: "vnc", option: "enabled", value: "True" }
     - { section: "vnc", option: "server_listen", value: "{{public_ip}}" }
     - { section: "vnc", option: "server_proxyclient_address", value: "$my_ip" }
+    - { section: "serial_console", option: "enabled", value: "true" }
+    - { section: "serial_console", option: "serialproxy_host", value: "{{public_ip}}" }
+    - { section: "serial_console", option: "serialproxy_port", value: "6083" }
     - { section: "glance", option: "api_servers", value: "http://glance:9292" }
     - { section: "cinder", option: "os_region_name", value: "RegionOne" }
     - { section: "oslo_concurrency", option: "lock_path", value: "/var/lib/nova/tmp" }
