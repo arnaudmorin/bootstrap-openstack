@@ -18,7 +18,7 @@ grep 'backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get -y install extrepo
-extrepo enable openstack_ussuri
+extrepo enable openstack_victoria
 apt-get update
 apt-get -y install ifupdown
 

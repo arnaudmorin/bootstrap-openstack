@@ -18,7 +18,7 @@ grep 'backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get -y install extrepo
-extrepo enable openstack_ussuri
+extrepo enable openstack_victoria
 apt-get update
 apt-get -t buster-backports -y install ansible  # we need latest ansible, previous version are failing
 apt-get -y install mosh git tmux ifupdown python-os-client-config python-shade
@@ -77,7 +77,7 @@ EOF
 
 # Clone bootstrap repo
 cd /root/
-git clone https://github.com/arnaudmorin/bootstrap-openstack.git -b ussuri
+git clone https://github.com/arnaudmorin/bootstrap-openstack.git -b victoria
 
 # Configure ansible
 mv /etc/ansible/ /etc/ansible.old
