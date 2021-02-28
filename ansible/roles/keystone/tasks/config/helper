@@ -99,7 +99,7 @@ function create_network_public(){(
     # ($GATEWAY here)
     openstack subnet create \
      --network public \
-     --subnet-range 10.0.0.0/16 \
+     --subnet-range 172.31.0.0/17 \
      --gateway $GATEWAY \
      --no-dhcp \
      --service-type 'network:floatingip_agent_gateway' \
