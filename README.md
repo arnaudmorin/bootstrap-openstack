@@ -1,3 +1,9 @@
+# DEPRECATION NOTICE
+
+This repo is deprecated, please use [bootstrap-openstack-k8s](https://github.com/arnaudmorin/bootstrap-openstack-k8s) instead
+
+
+
 
 
    * [Introduction](#introduction)
